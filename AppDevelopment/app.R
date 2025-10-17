@@ -4,76 +4,139 @@ library(shiny)
 library(bslib)
 
 # Define UI for app that draws a histogram ----
-ui <- page_sidebar(
+ui <- fluidPage(
   # App title ----
-  title = "Data Center GPU Health Dashboard",
-  # Sidebar panel for inputs ----
-  sidebar = sidebar(
-    # Input: File upload for CSV ----
-    fileInput(
-      inputId = "csvFile",
-      label = "Upload CSV File:",
-      accept = c(".csv"),
-      placeholder = "Choose a CSV file..."
-    ),
-    # Input: Input box for Maximum Temperature ----
-    numericInput(
-      inputId = "maxTemperature",
-      label = "Maximum Temperature (Degrees Celsius):",
-      value = 80
-    ),
-    # Input: Input box for Desired Temperature----
-    numericInput(
-      inputId = "desiredTemperature",
-      label = "Desired Temperature (Degrees Celsius):",
-      value = 70
-    ),
-    # Input: X-axis column selector ----
-    selectInput(
-      inputId = "xColumn",
-      label = "Select X-axis Column:",
-      choices = NULL,
-      selected = NULL
-    ),
-    # Input: Y-axis column selector ----
-    selectInput(
-      inputId = "yColumn",
-      label = "Select Y-axis Column:",
-      choices = NULL,
-      selected = NULL
-    )
-  ),
+  titlePanel("Data Center GPU Health Dashboard"),
   # Main content area with tabs ----
   tabsetPanel(
     id = "mainTabs",
     # Tab 1: Data Analysis
     tabPanel(
       "Tab 1",
-      card(
-        card_header("Data Preview"),
-        tableOutput("dataPreview")
-      ),
-      card(
-        card_header("Scatter Plot"),
-        plotOutput(outputId = "scatterPlot")
+      page_sidebar(
+        title = "Data Analysis",
+        sidebar = sidebar(
+          # Input: File upload for CSV ----
+          fileInput(
+            inputId = "csvFile",
+            label = "Upload CSV File:",
+            accept = c(".csv"),
+            placeholder = "Choose a CSV file..."
+          ),
+          # Input: Input box for Maximum Temperature ----
+          numericInput(
+            inputId = "maxTemperature",
+            label = "Maximum Temperature (Degrees Celsius):",
+            value = 80
+          ),
+          # Input: Input box for Desired Temperature----
+          numericInput(
+            inputId = "desiredTemperature",
+            label = "Desired Temperature (Degrees Celsius):",
+            value = 70
+          ),
+          # Input: X-axis column selector ----
+          selectInput(
+            inputId = "xColumn",
+            label = "Select X-axis Column:",
+            choices = NULL,
+            selected = NULL
+          ),
+          # Input: Y-axis column selector ----
+          selectInput(
+            inputId = "yColumn",
+            label = "Select Y-axis Column:",
+            choices = NULL,
+            selected = NULL
+          )
+        ),
+        card(
+          card_header("Data Preview"),
+          tableOutput("dataPreview")
+        ),
+        card(
+          card_header("Scatter Plot"),
+          plotOutput(outputId = "scatterPlot")
+        )
       )
     ),
     # Tab 2: Additional Analysis
     tabPanel(
       "Tab 2",
-      card(
-        card_header("Tab 2 Content"),
-        p("This is Tab 2. You can add additional analysis or visualizations here."),
-        plotOutput(outputId = "tab2Plot")
+      page_sidebar(
+        title = "Distribution Analysis",
+        sidebar = sidebar(
+          # Input: File upload for CSV (Tab 2) ----
+          fileInput(
+            inputId = "csvFile2",
+            label = "Upload CSV File:",
+            accept = c(".csv"),
+            placeholder = "Choose a CSV file..."
+          ),
+          # Input: Column selector for histogram ----
+          selectInput(
+            inputId = "histColumn",
+            label = "Select Column for Histogram:",
+            choices = NULL,
+            selected = NULL
+          ),
+          # Input: Number of bins ----
+          numericInput(
+            inputId = "bins",
+            label = "Number of Bins:",
+            value = 30,
+            min = 5,
+            max = 100
+          ),
+          # Input: Color selector ----
+          selectInput(
+            inputId = "histColor",
+            label = "Histogram Color:",
+            choices = c("Blue" = "#007bc2", "Red" = "#dc3545", "Green" = "#28a745", "Orange" = "#fd7e14"),
+            selected = "#007bc2"
+          )
+        ),
+        card(
+          card_header("Tab 2 Content"),
+          p("This tab shows distribution analysis of your data."),
+          plotOutput(outputId = "tab2Plot")
+        )
       )
     ),
     # Tab 3: Summary/Reports
     tabPanel(
       "Tab 3",
-      card(
-        card_header("Tab 3 Content"),
-        p("This is Tab 3. You can add summary statistics or reports here."),
-        verbatimTextOutput("summaryStats")
+      page_sidebar(
+        title = "Summary Statistics",
+        sidebar = sidebar(
+          # Input: File upload for CSV (Tab 3) ----
+          fileInput(
+            inputId = "csvFile3",
+            label = "Upload CSV File:",
+            accept = c(".csv"),
+            placeholder = "Choose a CSV file..."
+          ),
+          # Input: Summary type selector ----
+          selectInput(
+            inputId = "summaryType",
+            label = "Summary Type:",
+            choices = c("Basic Statistics", "Data Types", "Missing Values", "All Information"),
+            selected = "All Information"
+          ),
+          # Input: Decimal places ----
+          numericInput(
+            inputId = "decimalPlaces",
+            label = "Decimal Places:",
+            value = 2,
+            min = 0,
+            max = 10
+          )
+        ),
+        card(
+          card_header("Tab 3 Content"),
+          p("This tab displays comprehensive summary statistics about your dataset."),
+          verbatimTextOutput("summaryStats")
+        )
       )
     ),
     # Tab 4: How to Use
@@ -125,7 +188,7 @@ ui <- page_sidebar(
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
   
-  # Reactive data from uploaded CSV
+  # Reactive data from uploaded CSV (Tab 1)
   data <- reactive({
     req(input$csvFile)
     
@@ -133,8 +196,26 @@ server <- function(input, output) {
     df <- read.csv(input$csvFile$datapath)
     return(df)
   })
-
-  # Update column choices when data changes
+  
+  # Reactive data from uploaded CSV (Tab 2)
+  data2 <- reactive({
+    req(input$csvFile2)
+    
+    # Read the CSV file
+    df <- read.csv(input$csvFile2$datapath)
+    return(df)
+  })
+  
+  # Reactive data from uploaded CSV (Tab 3)
+  data3 <- reactive({
+    req(input$csvFile3)
+    
+    # Read the CSV file
+    df <- read.csv(input$csvFile3$datapath)
+    return(df)
+  })
+ 
+  # Update column choices when data changes (Tab 1)
   observe({
     req(data())
     column_names <- names(data())
@@ -149,6 +230,18 @@ server <- function(input, output) {
       inputId = "yColumn",
       choices = column_names,
       selected = column_names[min(2, length(column_names))]  # Select second column by default, or first if only one column
+    )
+  })
+  
+  # Update column choices when data changes (Tab 2)
+  observe({
+    req(data2())
+    column_names <- names(data2())
+    updateSelectInput(
+      session = getDefaultReactiveDomain(),
+      inputId = "histColumn",
+      choices = column_names,
+      selected = column_names[1]  # Select first column by default
     )
   })
 
@@ -203,15 +296,15 @@ server <- function(input, output) {
 
 
   
-  # Tab 2: Additional plot (example: histogram of X-axis data)
+  # Tab 2: Additional plot (histogram with custom settings)
   output$tab2Plot <- renderPlot({
-    req(data(), input$xColumn)
+    req(data2(), input$histColumn)
     
-    x <- data()[[input$xColumn]]
+    x <- data2()[[input$histColumn]]
     
     if (!is.numeric(x)) {
       plot.new()
-      text(0.5, 0.5, "Please select a numeric column for X-axis", 
+      text(0.5, 0.5, "Please select a numeric column", 
            cex = 1.5, col = "red")
       return()
     }
@@ -225,10 +318,14 @@ server <- function(input, output) {
       return()
     }
     
-    # Create histogram
-    hist(x, col = "#007bc2", border = "white",
-         xlab = input$xColumn,
-         main = paste("Histogram of", input$xColumn))
+    # Create histogram with custom settings
+    hist(x, 
+         breaks = input$bins,
+         col = input$histColor, 
+         border = "white",
+         xlab = input$histColumn,
+         main = paste("Histogram of", input$histColumn),
+         ylab = "Frequency")
   })
   
 
@@ -238,20 +335,78 @@ server <- function(input, output) {
 
   # Tab 3: Summary statistics
   output$summaryStats <- renderText({
-    req(data())
+    req(data3())
     
-    df <- data()
-    summary_text <- paste(
-      "Dataset Summary:\n",
-      "Number of rows:", nrow(df), "\n",
-      "Number of columns:", ncol(df), "\n\n",
-      "Column names:\n",
-      paste(names(df), collapse = ", "), "\n\n",
-      "Data types:\n"
-    )
+    df <- data3()
+    decimal_places <- input$decimalPlaces
     
-    for (col in names(df)) {
-      summary_text <- paste(summary_text, col, ":", class(df[[col]]), "\n")
+    if (input$summaryType == "Basic Statistics") {
+      summary_text <- paste(
+        "Basic Statistics:\n",
+        "Number of rows:", nrow(df), "\n",
+        "Number of columns:", ncol(df), "\n\n"
+      )
+      
+      # Add basic stats for numeric columns
+      numeric_cols <- sapply(df, is.numeric)
+      if (any(numeric_cols)) {
+        summary_text <- paste(summary_text, "Numeric Columns Summary:\n")
+        for (col in names(df)[numeric_cols]) {
+          col_data <- df[[col]][!is.na(df[[col]])]
+          if (length(col_data) > 0) {
+            summary_text <- paste(summary_text, 
+              col, ":\n",
+              "  Mean:", round(mean(col_data), decimal_places), "\n",
+              "  Median:", round(median(col_data), decimal_places), "\n",
+              "  Min:", round(min(col_data), decimal_places), "\n",
+              "  Max:", round(max(col_data), decimal_places), "\n\n")
+          }
+        }
+      }
+      
+    } else if (input$summaryType == "Data Types") {
+      summary_text <- paste(
+        "Data Types:\n",
+        "Column names and types:\n"
+      )
+      
+      for (col in names(df)) {
+        summary_text <- paste(summary_text, col, ":", class(df[[col]]), "\n")
+      }
+      
+    } else if (input$summaryType == "Missing Values") {
+      summary_text <- paste(
+        "Missing Values Analysis:\n"
+      )
+      
+      for (col in names(df)) {
+        missing_count <- sum(is.na(df[[col]]))
+        missing_pct <- round((missing_count / nrow(df)) * 100, decimal_places)
+        summary_text <- paste(summary_text, 
+          col, ": ", missing_count, " missing (", missing_pct, "%)\n")
+      }
+      
+    } else { # All Information
+      summary_text <- paste(
+        "Complete Dataset Summary:\n",
+        "Number of rows:", nrow(df), "\n",
+        "Number of columns:", ncol(df), "\n\n",
+        "Column names:\n",
+        paste(names(df), collapse = ", "), "\n\n",
+        "Data types:\n"
+      )
+      
+      for (col in names(df)) {
+        summary_text <- paste(summary_text, col, ":", class(df[[col]]), "\n")
+      }
+      
+      summary_text <- paste(summary_text, "\nMissing Values:\n")
+      for (col in names(df)) {
+        missing_count <- sum(is.na(df[[col]]))
+        missing_pct <- round((missing_count / nrow(df)) * 100, decimal_places)
+        summary_text <- paste(summary_text, 
+          col, ": ", missing_count, " missing (", missing_pct, "%)\n")
+      }
     }
     
     return(summary_text)
