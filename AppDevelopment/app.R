@@ -47,14 +47,39 @@ ui <- page_sidebar(
       selected = NULL
     )
   ),
-  # Main content area ----
-  card(
-    card_header("Data Preview"),
-    tableOutput("dataPreview")
-  ),
-  card(
-    card_header("Scatter Plot"),
-    plotOutput(outputId = "scatterPlot")
+  # Main content area with tabs ----
+  tabsetPanel(
+    id = "mainTabs",
+    # Tab 1: Data Analysis
+    tabPanel(
+      "Tab 1",
+      card(
+        card_header("Data Preview"),
+        tableOutput("dataPreview")
+      ),
+      card(
+        card_header("Scatter Plot"),
+        plotOutput(outputId = "scatterPlot")
+      )
+    ),
+    # Tab 2: Additional Analysis
+    tabPanel(
+      "Tab 2",
+      card(
+        card_header("Tab 2 Content"),
+        p("This is Tab 2. You can add additional analysis or visualizations here."),
+        plotOutput(outputId = "tab2Plot")
+      )
+    ),
+    # Tab 3: Summary/Reports
+    tabPanel(
+      "Tab 3",
+      card(
+        card_header("Tab 3 Content"),
+        p("This is Tab 3. You can add summary statistics or reports here."),
+        verbatimTextOutput("summaryStats")
+      )
+    )
   )
 )
 
@@ -70,7 +95,7 @@ server <- function(input, output) {
     df <- read.csv(input$csvFile$datapath)
     return(df)
   })
-  
+
   # Update column choices when data changes
   observe({
     req(data())
@@ -88,6 +113,7 @@ server <- function(input, output) {
       selected = column_names[min(2, length(column_names))]  # Select second column by default, or first if only one column
     )
   })
+
   # Display data preview
   output$dataPreview <- renderTable({
     req(data())
@@ -134,6 +160,58 @@ server <- function(input, output) {
     if (length(x) > 1) {
       abline(lm(y ~ x), col = "red", lwd = 2)
     }
+  })
+
+
+  
+  
+  # Tab 2: Additional plot (example: histogram of X-axis data)
+  output$tab2Plot <- renderPlot({
+    req(data(), input$xColumn)
+    
+    x <- data()[[input$xColumn]]
+    
+    if (!is.numeric(x)) {
+      plot.new()
+      text(0.5, 0.5, "Please select a numeric column for X-axis", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    x <- x[!is.na(x)]
+    
+    if (length(x) == 0) {
+      plot.new()
+      text(0.5, 0.5, "No valid numeric data found", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Create histogram
+    hist(x, col = "#007bc2", border = "white",
+         xlab = input$xColumn,
+         main = paste("Histogram of", input$xColumn))
+  })
+  
+  # Tab 3: Summary statistics
+  output$summaryStats <- renderText({
+    req(data())
+    
+    df <- data()
+    summary_text <- paste(
+      "Dataset Summary:\n",
+      "Number of rows:", nrow(df), "\n",
+      "Number of columns:", ncol(df), "\n\n",
+      "Column names:\n",
+      paste(names(df), collapse = ", "), "\n\n",
+      "Data types:\n"
+    )
+    
+    for (col in names(df)) {
+      summary_text <- paste(summary_text, col, ":", class(df[[col]]), "\n")
+    }
+    
+    return(summary_text)
   })
 }
 
