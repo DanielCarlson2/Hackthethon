@@ -7,6 +7,22 @@ library(bslib)
 ui <- fluidPage(
   # App title ----
   titlePanel("Data Center GPU Health Dashboard"),
+  
+  # Global CSV file input ----
+  fluidRow(
+    column(12,
+      card(
+        card_header("Data Upload"),
+        fileInput(
+          inputId = "csvFile",
+          label = "Upload CSV File:",
+          accept = c(".csv"),
+          placeholder = "Choose a CSV file..."
+        )
+      )
+    )
+  ),
+  
   # Main content area with tabs ----
   tabsetPanel(
     id = "mainTabs",
@@ -16,13 +32,6 @@ ui <- fluidPage(
       page_sidebar(
         title = "Data Analysis",
         sidebar = sidebar(
-          # Input: File upload for CSV ----
-          fileInput(
-            inputId = "csvFile",
-            label = "Upload CSV File:",
-            accept = c(".csv"),
-            placeholder = "Choose a CSV file..."
-          ),
           # Input: Input box for Maximum Temperature ----
           numericInput(
             inputId = "maxTemperature",
@@ -66,13 +75,6 @@ ui <- fluidPage(
       page_sidebar(
         title = "Distribution Analysis",
         sidebar = sidebar(
-          # Input: File upload for CSV (Tab 2) ----
-          fileInput(
-            inputId = "csvFile2",
-            label = "Upload CSV File:",
-            accept = c(".csv"),
-            placeholder = "Choose a CSV file..."
-          ),
           # Input: Column selector for histogram ----
           selectInput(
             inputId = "histColumn",
@@ -109,13 +111,6 @@ ui <- fluidPage(
       page_sidebar(
         title = "Summary Statistics",
         sidebar = sidebar(
-          # Input: File upload for CSV (Tab 3) ----
-          fileInput(
-            inputId = "csvFile3",
-            label = "Upload CSV File:",
-            accept = c(".csv"),
-            placeholder = "Choose a CSV file..."
-          ),
           # Input: Summary type selector ----
           selectInput(
             inputId = "summaryType",
@@ -188,30 +183,12 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
   
-  # Reactive data from uploaded CSV (Tab 1)
+  # Single reactive data source for all tabs
   data <- reactive({
     req(input$csvFile)
     
     # Read the CSV file
     df <- read.csv(input$csvFile$datapath)
-    return(df)
-  })
-  
-  # Reactive data from uploaded CSV (Tab 2)
-  data2 <- reactive({
-    req(input$csvFile2)
-    
-    # Read the CSV file
-    df <- read.csv(input$csvFile2$datapath)
-    return(df)
-  })
-  
-  # Reactive data from uploaded CSV (Tab 3)
-  data3 <- reactive({
-    req(input$csvFile3)
-    
-    # Read the CSV file
-    df <- read.csv(input$csvFile3$datapath)
     return(df)
   })
  
@@ -235,8 +212,8 @@ server <- function(input, output) {
   
   # Update column choices when data changes (Tab 2)
   observe({
-    req(data2())
-    column_names <- names(data2())
+    req(data())
+    column_names <- names(data())
     updateSelectInput(
       session = getDefaultReactiveDomain(),
       inputId = "histColumn",
@@ -298,9 +275,9 @@ server <- function(input, output) {
   
   # Tab 2: Additional plot (histogram with custom settings)
   output$tab2Plot <- renderPlot({
-    req(data2(), input$histColumn)
+    req(data(), input$histColumn)
     
-    x <- data2()[[input$histColumn]]
+    x <- data()[[input$histColumn]]
     
     if (!is.numeric(x)) {
       plot.new()
@@ -335,9 +312,9 @@ server <- function(input, output) {
 
   # Tab 3: Summary statistics
   output$summaryStats <- renderText({
-    req(data3())
+    req(data())
     
-    df <- data3()
+    df <- data()
     decimal_places <- input$decimalPlaces
     
     if (input$summaryType == "Basic Statistics") {
