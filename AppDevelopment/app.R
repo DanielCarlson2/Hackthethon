@@ -3,6 +3,7 @@
 library(shiny)
 library(bslib)
 
+
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
   # Custom theme with orange and purple colors ----
@@ -42,6 +43,49 @@ ui <- fluidPage(
   # Main content area with tabs ----
   tabsetPanel(
     id = "mainTabs",
+        # Tab 4: How to Use
+    tabPanel(
+      "How to Use",
+      card(
+        card_header("Instructions"),
+        h4("Getting Started"),
+        p("Welcome to the Data Center GPU Health Dashboard! Follow these steps to analyze your data:"),
+        
+        h4("Step 1: Upload Your Data"),
+        p("• Click 'Choose a CSV file...' to upload your dataset"),
+        p("• Make sure your CSV file contains numeric columns for analysis"),
+        p("• The app will automatically detect and display your data"),
+        
+        h4("Step 2: Set Temperature Thresholds"),
+        p("• Enter your maximum temperature threshold (default: 80°C)"),
+        p("• Enter your desired temperature threshold (default: 70°C)"),
+        p("• These values help monitor GPU health and performance"),
+        
+        h4("Step 3: Select Analysis Columns"),
+        p("• Choose a column for the X-axis of your scatter plot"),
+        p("• Choose a column for the Y-axis of your scatter plot"),
+        p("• Both columns must contain numeric data"),
+        
+        h4("Understanding the Tabs"),
+        tags$ul(
+          tags$li(tags$strong("Tab 1:"), "Contains your data preview and scatter plot analysis"),
+          tags$li(tags$strong("Tab 2:"), "Shows a histogram of your X-axis data distribution"),
+          tags$li(tags$strong("Tab 3:"), "Displays summary statistics about your dataset"),
+          tags$li(tags$strong("How to Use:"), "This instruction panel")
+        ),
+        
+        h4("Tips for Best Results"),
+        p("• Use CSV files with clear column headers"),
+        p("• Ensure numeric columns don't contain text or special characters"),
+        p("• The scatter plot includes a trend line to show correlations"),
+        p("• Check Tab 3 for data quality information"),
+        
+        h4("Troubleshooting"),
+        p("• If plots don't appear, check that you've selected numeric columns"),
+        p("• Error messages will guide you if data issues are detected"),
+        p("• Make sure your CSV file is properly formatted")
+      )
+    ),
     # Tab 1: General Analysis
     tabPanel(
       "General",
@@ -113,49 +157,6 @@ ui <- fluidPage(
           p("This tab displays comprehensive summary statistics about your dataset."),
           verbatimTextOutput("summaryStats")
         )
-      )
-    ),
-    # Tab 4: How to Use
-    tabPanel(
-      "How to Use",
-      card(
-        card_header("Instructions"),
-        h4("Getting Started"),
-        p("Welcome to the Data Center GPU Health Dashboard! Follow these steps to analyze your data:"),
-        
-        h4("Step 1: Upload Your Data"),
-        p("• Click 'Choose a CSV file...' to upload your dataset"),
-        p("• Make sure your CSV file contains numeric columns for analysis"),
-        p("• The app will automatically detect and display your data"),
-        
-        h4("Step 2: Set Temperature Thresholds"),
-        p("• Enter your maximum temperature threshold (default: 80°C)"),
-        p("• Enter your desired temperature threshold (default: 70°C)"),
-        p("• These values help monitor GPU health and performance"),
-        
-        h4("Step 3: Select Analysis Columns"),
-        p("• Choose a column for the X-axis of your scatter plot"),
-        p("• Choose a column for the Y-axis of your scatter plot"),
-        p("• Both columns must contain numeric data"),
-        
-        h4("Understanding the Tabs"),
-        tags$ul(
-          tags$li(tags$strong("Tab 1:"), "Contains your data preview and scatter plot analysis"),
-          tags$li(tags$strong("Tab 2:"), "Shows a histogram of your X-axis data distribution"),
-          tags$li(tags$strong("Tab 3:"), "Displays summary statistics about your dataset"),
-          tags$li(tags$strong("How to Use:"), "This instruction panel")
-        ),
-        
-        h4("Tips for Best Results"),
-        p("• Use CSV files with clear column headers"),
-        p("• Ensure numeric columns don't contain text or special characters"),
-        p("• The scatter plot includes a trend line to show correlations"),
-        p("• Check Tab 3 for data quality information"),
-        
-        h4("Troubleshooting"),
-        p("• If plots don't appear, check that you've selected numeric columns"),
-        p("• Error messages will guide you if data issues are detected"),
-        p("• Make sure your CSV file is properly formatted")
       )
     )
   )
