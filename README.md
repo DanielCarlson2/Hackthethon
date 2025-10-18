@@ -32,7 +32,8 @@ Prerequisite: Follow the CSV generator instructions first if you do not have a c
 Step 1: Open the Shiny App Tool
 - Launch the Shiny application in RStudio or from the console.
 - The interface will open automatically in your web browser.
-Example:[GIF1]
+Example: [GIF1]
+
 
 Step 2: Upload Your CSV File
 - Use the file upload box on the Home or Upload page.
