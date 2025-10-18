@@ -157,10 +157,32 @@ ui <- fluidPage(
         p("Shows data with customizable sorting and number of rows. Use the dropdowns above to control display options."),
         tableOutput("dataPreview")
       ),
-      card(
-        card_header("Statistics Analysis"),
-        p("Statistical analysis for average metrics (temperature, power, memory) for the selected time period. Choose 'All Hours' for global statistics or select a specific hour."),
-        verbatimTextOutput("averageStats")
+      # Statistics Cards - Three side by side
+      fluidRow(
+        column(4,
+          card(
+            card_header("🌡️ Temperature Statistics", class = "bg-primary text-white"),
+            p("Average GPU Temperature analysis (°C)"),
+            verbatimTextOutput("tempStats"),
+            class = "h-100"
+          )
+        ),
+        column(4,
+          card(
+            card_header("⚡ Power Usage Statistics", class = "bg-success text-white"),
+            p("Average GPU Power Usage analysis (W)"),
+            verbatimTextOutput("powerStats"),
+            class = "h-100"
+          )
+        ),
+        column(4,
+          card(
+            card_header("💾 Memory Usage Statistics", class = "bg-info text-white"),
+            p("Average GPU Memory Usage analysis (%)"),
+            verbatimTextOutput("memoryStats"),
+            class = "h-100"
+          )
+        )
       )
     ),
     ),
@@ -410,8 +432,46 @@ server <- function(input, output) {
   })
   
   
-  # Display average statistics for columns 4, 6, and 8 only
-  output$averageStats <- renderText({
+  # Helper function to calculate statistics for a specific column
+  calculate_stats <- function(df, col_name, hour_selection) {
+    # Filter data by selected hour if not "all"
+    if (hour_selection != "all") {
+      time_col <- names(df)[3]
+      df <- df[df[[time_col]] == as.numeric(hour_selection), ]
+      
+      if (nrow(df) == 0) {
+        return(paste("No data found for Hour", hour_selection))
+      }
+    }
+    
+    col_data <- df[[col_name]]
+    
+    # Check if column is numeric
+    if (!is.numeric(col_data)) {
+      return("Non-numeric column")
+    }
+    
+    col_data_clean <- col_data[!is.na(col_data)]
+    
+    if (length(col_data_clean) == 0) {
+      return("No valid numeric data")
+    }
+    
+    # Calculate statistics
+    stats_text <- paste(
+      "📊 Mean:", round(mean(col_data_clean), 2), "\n",
+      "📈 Std Dev:", round(sd(col_data_clean), 2), "\n",
+      "📋 Median:", round(median(col_data_clean), 2), "\n",
+      "⬇️ Min:", round(min(col_data_clean), 2), "\n",
+      "⬆️ Max:", round(max(col_data_clean), 2), "\n",
+      "🔢 Count:", length(col_data_clean)
+    )
+    
+    return(stats_text)
+  }
+  
+  # Temperature Statistics
+  output$tempStats <- renderText({
     req(data())
     
     df <- data()
@@ -421,52 +481,41 @@ server <- function(input, output) {
       return("Dataset must have at least 8 columns to show statistics.")
     }
     
-    # Filter data by selected hour if not "all"
-    if (input$selectedHour != "all") {
-      # Assuming Time_Period is column 3 (index 3)
-      time_col <- names(df)[3]
-      df <- df[df[[time_col]] == as.numeric(input$selectedHour), ]
-      
-      if (nrow(df) == 0) {
-        return(paste("No data found for Hour", input$selectedHour))
-      }
+    # Get temperature column (column 4)
+    temp_col <- names(df)[4]
+    calculate_stats(df, temp_col, input$selectedHour)
+  })
+  
+  # Power Usage Statistics
+  output$powerStats <- renderText({
+    req(data())
+    
+    df <- data()
+    
+    # Check if we have at least 8 columns
+    if (ncol(df) < 8) {
+      return("Dataset must have at least 8 columns to show statistics.")
     }
     
-    # Get specific columns: 4 (Average GPU Temp), 6 (Average GPU Power), 8 (Average GPU Memory)
-    cols_to_analyze <- names(df)[c(4, 6, 8)]
+    # Get power column (column 6)
+    power_col <- names(df)[6]
+    calculate_stats(df, power_col, input$selectedHour)
+  })
+  
+  # Memory Usage Statistics
+  output$memoryStats <- renderText({
+    req(data())
     
-    # Create header based on selection
-    if (input$selectedHour == "all") {
-      summary_text <- paste("Average Statistics (All Hours):\n\n")
-    } else {
-      summary_text <- paste("Average Statistics for Hour", input$selectedHour, ":\n\n")
+    df <- data()
+    
+    # Check if we have at least 8 columns
+    if (ncol(df) < 8) {
+      return("Dataset must have at least 8 columns to show statistics.")
     }
     
-    for (col in cols_to_analyze) {
-      col_data <- df[[col]]
-      
-      # Check if column is numeric
-      if (is.numeric(col_data)) {
-        col_data_clean <- col_data[!is.na(col_data)]
-        
-        if (length(col_data_clean) > 0) {
-          summary_text <- paste(summary_text, 
-            col, ":\n",
-            "  Mean:", round(mean(col_data_clean), 2), "\n",
-            "  Standard Deviation:", round(sd(col_data_clean), 2), "\n",
-            "  Median:", round(median(col_data_clean), 2), "\n",
-            "  Min:", round(min(col_data_clean), 2), "\n",
-            "  Max:", round(max(col_data_clean), 2), "\n",
-            "  Count:", length(col_data_clean), "\n")
-        } else {
-          summary_text <- paste(summary_text, col, ": No valid numeric data\n\n")
-        }
-      } else {
-        summary_text <- paste(summary_text, col, ": Non-numeric column\n\n")
-      }
-    }
-    
-    return(summary_text)
+    # Get memory column (column 8)
+    memory_col <- names(df)[8]
+    calculate_stats(df, memory_col, input$selectedHour)
   })
   
 
