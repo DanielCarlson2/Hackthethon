@@ -255,7 +255,9 @@ ui <- fluidPage(
           style = "margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; border-left: 4px solid #2196F3;",
           h6("📋 Instructions:", style = "margin-bottom: 8px; font-weight: bold; color: #1976D2;"),
           p("💡 Click on any rack button below to analyze that specific rack.", 
-            style = "margin: 0; font-size: 14px; color: #424242;")
+            style = "margin: 0; font-size: 14px; color: #424242;"),
+          p("📊 Ppk (Process Performance Index) measures how well your rack performs relative to specification limits. Higher Ppk values indicate better process capability and fewer quality issues.", 
+            style = "margin: 5px 0 0 0; font-size: 13px; color: #666; font-style: italic;")
         ),
         # Ppk Color Legend
         div(
