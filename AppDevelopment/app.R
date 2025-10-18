@@ -10,7 +10,7 @@ source("/cloud/project/User tool/User_tool_math.R")
 ui <- fluidPage(
     tags$style(HTML("
     .boxButton {
-      background-color: #20B2AA;
+      background-color: #440154;
       color: white;
       padding: 20px;
       border-radius: 10px;
@@ -22,27 +22,27 @@ ui <- fluidPage(
       transition: all 0.3s ease;
     }
     .boxButton:hover {
-      background-color: #2E8B57;
+      background-color: #31688E;
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(32, 178, 170, 0.3);
+      box-shadow: 0 4px 8px rgba(68, 1, 84, 0.3);
     }
   ")),
-  # Custom mint-themed design ----
+  # Custom Viridis-themed design ----
   theme = bs_theme(
     version = 5,
-    primary = "#20B2AA",      # Light Sea Green (mint primary)
-    secondary = "#98FB98",    # Pale Green (mint secondary)
-    success = "#00CED1",      # Dark Turquoise for success states
-    info = "#40E0D0",         # Turquoise for info
-    warning = "#FFD700",      # Gold for warnings
-    danger = "#FF6347",       # Tomato for danger
-    light = "#F0FFF0",        # Honeydew light background
-    dark = "#2F4F4F",         # Dark Slate Gray text
+    primary = "#440154",      # Dark purple (viridis primary)
+    secondary = "#31688E",    # Blue (viridis secondary)
+    success = "#35B779",      # Green for success states
+    info = "#1F9E89",         # Teal for info
+    warning = "#FDE725",      # Yellow for warnings
+    danger = "#F1605D",       # Red for danger
+    light = "#F7F7F7",        # Light background
+    dark = "#2D2D2D",         # Dark text
     bg = "#FFFFFF",           # Main background
-    fg = "#2F4F4F",           # Main text color
+    fg = "#2D2D2D",           # Main text color
     "font-family-base" = "'Inter', 'Segoe UI', sans-serif",
     "border-radius" = "0.5rem",
-    "box-shadow" = "0 0.125rem 0.25rem rgba(32, 178, 170, 0.075)"
+    "box-shadow" = "0 0.125rem 0.25rem rgba(68, 1, 84, 0.075)"
   ),
 
   # App title ----
@@ -70,41 +70,41 @@ ui <- fluidPage(
       card(
         card_header("Instructions"),
         h4("Getting Started"),
-        p("Welcome to the Data Center GPU Health Dashboard! Follow these steps to analyze your data:"),
+        p("Welcome to the Data Center GPU Health Dashboard! Follow these steps to analyze your GPU data:"),
         h4("Step 1: Upload Your Data"),
-        p("• Click 'Choose a CSV file...' to upload your dataset"),
-        p("• Make sure your CSV file contains numeric columns for analysis"),
+        p("• Click 'Choose a CSV file...' to upload your GPU dataset"),
+        p("• Ensure your CSV has columns: GPU ID, GPU Rack, Hour, Average GPU Temp [C], Peak GPU Temp[C], Average GPU Power Usage [W], Peak GPU Power usage [W], Average GPU Memory Usage [%], Peak GPU memory Usage [%]"),
         p("• The app will automatically detect and display your data"),
         
-        h4("Step 2: General"),
-        p("• Enter your maximum temperature threshold"),
-        p("• Enter your desired temperature threshold"),
-        p("• These values help monitor GPU health and performance"),
+        h4("Step 2: General Analysis"),
+        p("• View the histogram at the top to see data distribution with 95% confidence intervals"),
+        p("• Data outside 95% confidence will be highlighted in different colors"),
+        p("• Check the data preview with updated column titles"),
+        p("• Review average statistics for temperature, power, and memory usage"),
         
-        h4("Step 3: Analyze Your Data"),
-        p("• View the data preview to see your uploaded dataset"),
-        p("• Check the average statistics for columns 4 and beyond"),
-        p("• Use the histogram dropdown to visualize data distribution"),
-        p("• Adjust histogram settings (bins, color) as needed"),
+        h4("Step 3: Advanced Analysis"),
+        p("• Use 'By Rack' tab to analyze specific GPU racks"),
+        p("• Use 'By GPU' tab for failure detection and threshold analysis"),
+        p("• Adjust time periods and sorting options as needed"),
         
         h4("Understanding the Tabs"),
         tags$ul(
-          tags$li(tags$strong("General:"), "Contains your data preview, average statistics for columns 4+, and histogram analysis"),
-          tags$li(tags$strong("By Rack:"), "Currently empty"),
-          tags$li(tags$strong("By GPU:"), "Currently empty"),
+          tags$li(tags$strong("General:"), "Histogram analysis with confidence intervals, data preview, and average statistics for key metrics"),
+          tags$li(tags$strong("By Rack:"), "Rack-specific analysis with control charts and filtering"),
+          tags$li(tags$strong("By GPU:"), "Individual GPU failure detection and threshold monitoring"),
           tags$li(tags$strong("How to Use:"), "This instruction panel")
         ),
         
-        h4("Tips for Best Results"),
-        p("• Use CSV files with clear column headers"),
-        p("• Ensure numeric columns don't contain text or special characters"),
-        p("• The histogram shows data distribution patterns"),
-        p("• Statistics are calculated for columns 4 and beyond"),
+        h4("Key Features"),
+        p("• 95% confidence interval visualization in histograms"),
+        p("• Automatic outlier detection with color coding"),
+        p("• Focus on average metrics (temperature, power, memory)"),
+        p("• Real-time failure detection and alerting"),
         
         h4("Troubleshooting"),
         p("• If plots don't appear, check that you've selected numeric columns"),
         p("• Error messages will guide you if data issues are detected"),
-        p("• Make sure your CSV file is properly formatted")
+        p("• Make sure your CSV file follows the expected column format")
       )
     ),
     # Tab 1: General Analysis
@@ -148,19 +148,19 @@ ui <- fluidPage(
           )
         ),
         card(
+        card_header("Data Distribution"),
+        p("Histogram showing the distribution of selected metrics with 95% confidence intervals. Data outside confidence intervals are highlighted in different colors."),
+        plotOutput(outputId= "generalHistogram")
+      ),
+      card(
         card_header("Data Preview"),
         p("Shows data with customizable sorting and number of rows. Use the dropdowns above to control display options."),
         tableOutput("dataPreview")
       ),
       card(
         card_header("Statistics Analysis"),
-        p("Statistical analysis for the selected time period. Choose 'All Hours' for global statistics or select a specific hour."),
+        p("Statistical analysis for average metrics (temperature, power, memory) for the selected time period. Choose 'All Hours' for global statistics or select a specific hour."),
         verbatimTextOutput("averageStats")
-      ),
-      card(
-        card_header("Data Distribution"),
-        p("Histogram showing the distribution of selected metrics for the chosen time period. Fixed mint green color with 30 bins."),
-        plotOutput(outputId= "generalHistogram")
       )
     ),
     ),
@@ -359,11 +359,26 @@ server <- function(input, output) {
     }
   })
 
-  # Display data preview
+  # Display data preview with updated column names
   output$dataPreview <- renderTable({
     req(data())
     
     df <- data()
+    
+    # Update column names to the specified format
+    if (ncol(df) >= 9) {
+      colnames(df) <- c(
+        "GPU ID",
+        "GPU Rack", 
+        "Hour",
+        "Average GPU Temp [C]",
+        "Peak GPU Temp[C]",
+        "Average GPU Power Usage [W]",
+        "Peak GPU Power usage [W]",
+        "Average GPU Memory Usage [%]",
+        "Peak GPU memory Usage [%]"
+      )
+    }
     
     # Apply sorting based on sortOption
     if (input$sortOption == "time_period") {
@@ -395,15 +410,15 @@ server <- function(input, output) {
   })
   
   
-  # Display average statistics for columns 4 through end
+  # Display average statistics for columns 4, 6, and 8 only
   output$averageStats <- renderText({
     req(data())
     
     df <- data()
     
-    # Check if we have at least 4 columns
-    if (ncol(df) < 4) {
-      return("Dataset must have at least 4 columns to show statistics.")
+    # Check if we have at least 8 columns
+    if (ncol(df) < 8) {
+      return("Dataset must have at least 8 columns to show statistics.")
     }
     
     # Filter data by selected hour if not "all"
@@ -417,14 +432,14 @@ server <- function(input, output) {
       }
     }
     
-    # Get columns 4 through end
-    cols_to_analyze <- names(df)[4:ncol(df)]
+    # Get specific columns: 4 (Average GPU Temp), 6 (Average GPU Power), 8 (Average GPU Memory)
+    cols_to_analyze <- names(df)[c(4, 6, 8)]
     
     # Create header based on selection
     if (input$selectedHour == "all") {
-      summary_text <- paste("Global Statistics (All Hours):\n\n")
+      summary_text <- paste("Average Statistics (All Hours):\n\n")
     } else {
-      summary_text <- paste("Statistics for Hour", input$selectedHour, ":\n\n")
+      summary_text <- paste("Average Statistics for Hour", input$selectedHour, ":\n\n")
     }
     
     for (col in cols_to_analyze) {
@@ -593,7 +608,7 @@ observe({
     # Filter by time period if not "all"
     if (input$rackTimePeriod != "all") {
       time_col <- names(rack_data)[3]  # Time_Period column
-      rack_data <- rack_data[rack_data[[ime_ctol]] == as.numeric(input$rackTimePeriod), ]
+      rack_data <- rack_data[rack_data[[time_col]] == as.numeric(input$rackTimePeriod), ]
     }
     
     if (nrow(rack_data) == 0) {
@@ -648,7 +663,7 @@ observe({
     plot(time_points, metric_data,
          type = "b",
          pch = 19,
-         col = "#20B2AA",
+         col = "#440154",
          lwd = 2,
          xlab = "Time Points",
          ylab = paste("Average", tools::toTitleCase(input$rackMetric)),
@@ -657,7 +672,7 @@ observe({
          cex.main = 1.3)
     
     # Add control limits
-    abline(h = mean_val, col = "#2E8B57", lwd = 2, lty = 1)  # Centerline
+    abline(h = mean_val, col = "#35B779", lwd = 2, lty = 1)  # Centerline
     abline(h = upper_control, col = "#FF6347", lwd = 2, lty = 2)  # Upper control limit
     abline(h = lower_control, col = "#FF6347", lwd = 2, lty = 2)  # Lower control limit
     
@@ -671,7 +686,7 @@ observe({
     
     # Add legend
     legend_items <- c("Data Points", "Centerline", "Control Limits")
-    legend_cols <- c("#20B2AA", "#2E8B57", "#FF6347")
+    legend_cols <- c("#440154", "#35B779", "#F1605D")
     legend_lty <- c(1, 1, 2)
     
     if (!is.na(spec_upper) || !is.na(spec_lower)) {
@@ -852,14 +867,14 @@ observe({
     # Create histogram with fixed mint green color and 30 bins
     hist(x, 
          breaks = 30,
-         col = "#20B2AA",  # Fixed mint green color
+         col = "#440154",  # Viridis dark purple
          border = "white",
          xlab = input$histColumn,
          main = paste("Histogram of", input$histColumn),
          ylab = "Frequency")
   })
 
-  # General histogram for the General tab
+  # General histogram for the General tab with 95% confidence intervals
   output$generalHistogram <- renderPlot({
     req(data(), input$histColumn)
     
@@ -906,6 +921,17 @@ observe({
       return()
     }
     
+    # Calculate 95% confidence interval
+    mean_val <- mean(x)
+    std_val <- sd(x)
+    n <- length(x)
+    se <- std_val / sqrt(n)
+    
+    # 95% confidence interval (using t-distribution)
+    t_val <- qt(0.975, df = n - 1)
+    ci_lower <- mean_val - t_val * se
+    ci_upper <- mean_val + t_val * se
+    
     # Create title based on hour selection
     if (input$selectedHour == "all") {
       plot_title <- paste("Histogram of", input$histColumn, "(All Hours)")
@@ -913,14 +939,39 @@ observe({
       plot_title <- paste("Histogram of", input$histColumn, "(Hour", input$selectedHour, ")")
     }
     
-    # Create histogram with fixed mint green color and 30 bins
-    hist(x, 
+    # Create histogram with viridis colors
+    hist_result <- hist(x, 
          breaks = 30,
-         col = "#20B2AA",  # Fixed mint green color
+         plot = FALSE)
+    
+    # Determine colors based on 95% confidence interval
+    colors <- ifelse(hist_result$mids >= ci_lower & hist_result$mids <= ci_upper, 
+                     "#440154",  # Dark purple for within CI
+                     "#FDE725")  # Yellow for outside CI
+    
+    # Plot histogram
+    plot(hist_result,
+         col = colors,
          border = "white",
          xlab = input$histColumn,
          main = plot_title,
          ylab = "Frequency")
+    
+    # Add confidence interval lines
+    abline(v = ci_lower, col = "#35B779", lwd = 2, lty = 2)
+    abline(v = ci_upper, col = "#35B779", lwd = 2, lty = 2)
+    abline(v = mean_val, col = "#1F9E89", lwd = 2, lty = 1)
+    
+    # Add legend
+    legend("topright", 
+           legend = c("Within 95% CI", "Outside 95% CI", "Mean", "95% CI Bounds"),
+           col = c("#440154", "#FDE725", "#1F9E89", "#35B779"),
+           lty = c(1, 1, 1, 2),
+           lwd = c(2, 2, 2, 2),
+           cex = 0.8)
+    
+    # Add grid
+    grid()
   })
 
   # Failure Trend Plot
@@ -1009,7 +1060,7 @@ observe({
     plot(time_periods, temp_failures,
          type = "b",  # Both points and lines
          pch = 19,    # Solid circles
-         col = "#FF6347",  # Tomato color for temperature (warm)
+         col = "#F1605D",  # Viridis red for temperature
          lwd = 2,     # Line width
          xlab = "Time Period",
          ylab = "Number of Failures",
@@ -1022,29 +1073,29 @@ observe({
     lines(time_periods, power_failures,
           type = "b",
           pch = 17,    # Triangle
-          col = "#20B2AA",  # Light Sea Green for power
+          col = "#440154",  # Viridis dark purple for power
           lwd = 2)
     
     # Add memory failures line
     lines(time_periods, memory_failures,
           type = "b",
           pch = 15,    # Square
-          col = "#40E0D0",  # Turquoise for memory
+          col = "#1F9E89",  # Viridis teal for memory
           lwd = 2)
     
     # Add horizontal lines for means
     abline(h = mean_temp, 
-           col = "#FF6347",  # Tomato
+           col = "#F1605D",  # Viridis red
            lwd = 1, 
            lty = 2)  # Dashed line
     
     abline(h = mean_power, 
-           col = "#20B2AA",  # Light Sea Green
+           col = "#440154",  # Viridis dark purple
            lwd = 1, 
            lty = 2)  # Dashed line
     
     abline(h = mean_memory, 
-           col = "#40E0D0",  # Turquoise
+           col = "#1F9E89",  # Viridis teal
            lwd = 1, 
            lty = 2)  # Dashed line
     
@@ -1056,8 +1107,8 @@ observe({
                      paste("Temp Mean:", round(mean_temp, 2)),
                      paste("Power Mean:", round(mean_power, 2)),
                      paste("Memory Mean:", round(mean_memory, 2))),
-           col = c("#FF6347", "#20B2AA", "#40E0D0", 
-                  "#FF6347", "#20B2AA", "#40E0D0"),
+           col = c("#F1605D", "#440154", "#1F9E89", 
+                  "#F1605D", "#440154", "#1F9E89"),
            lty = c(1, 1, 1, 2, 2, 2),
            lwd = c(2, 2, 2, 1, 1, 1),
            pch = c(19, 17, 15, NA, NA, NA),
