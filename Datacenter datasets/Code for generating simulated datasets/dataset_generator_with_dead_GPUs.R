@@ -83,7 +83,7 @@ to_export <- one %>%
   select(-Is_Failing, everything(), Is_Failing)  # Move Is_Failing to end
 
 # Save to CSV
-# CHANGE THE FINAL CSV NAME TO AVOID OVERWRITTING FILES
+# CHANGE THE FINAL CSV NAME TO AVOID OVERWRITTING FILES AND MATCH YOUR FILE DIRECTORY TO STORE THE CSV FILE
 write.csv(to_export, "/cloud/project/Datacenter_datasets/_4.csv", row.names = FALSE)
 
 # Print diagnostics
