@@ -116,7 +116,7 @@ ui <- fluidPage(
           tableOutput("dataPreview")
         ),
         card(
-          card_header("Average Statistics (Columns 4+)"),
+          card_header("Average Statistics"),
           verbatimTextOutput("averageStats")
         ),
         card(
@@ -157,16 +157,28 @@ server <- function(input, output) {
   })
  
   
-  # Update column choices when data changes (Tab 2)
+  # Update column choices when data changes (General tab histogram)
   observe({
     req(data())
-    column_names <- names(data())
-    updateSelectInput(
-      session = getDefaultReactiveDomain(),
-      inputId = "histColumn",
-      choices = column_names,
-      selected = column_names[1]  # Select first column by default
-    )
+    df <- data()
+    
+    # Check if we have at least 4 columns
+    if (ncol(df) >= 4) {
+      column_names <- names(df)[4:ncol(df)]
+      updateSelectInput(
+        session = getDefaultReactiveDomain(),
+        inputId = "histColumn",
+        choices = column_names,
+        selected = column_names[1]  # Select first column (column 4) by default
+      )
+    } else {
+      updateSelectInput(
+        session = getDefaultReactiveDomain(),
+        inputId = "histColumn",
+        choices = "Dataset must have at least 4 columns",
+        selected = "Dataset must have at least 4 columns"
+      )
+    }
   })
 
   # Display data preview
@@ -189,7 +201,7 @@ server <- function(input, output) {
     # Get columns 4 through end
     cols_to_analyze <- names(df)[4:ncol(df)]
     
-    summary_text <- paste("Average Statistics for Columns 4+:\n\n")
+    summary_text <- paste("Average Statistics for Columns:\n\n")
     
     for (col in cols_to_analyze) {
       col_data <- df[[col]]
@@ -205,8 +217,7 @@ server <- function(input, output) {
             "  Standard Deviation:", round(sd(col_data_clean), 2), "\n",
             "  Median:", round(median(col_data_clean), 2), "\n",
             "  Min:", round(min(col_data_clean), 2), "\n",
-            "  Max:", round(max(col_data_clean), 2), "\n",
-            "  Count:", length(col_data_clean), "\n\n")
+            "  Max:", round(max(col_data_clean), 2), "\n")
         } else {
           summary_text <- paste(summary_text, col, ": No valid numeric data\n\n")
         }
@@ -222,7 +233,25 @@ server <- function(input, output) {
   output$generalHistogram <- renderPlot({
     req(data(), input$histColumn)
     
-    x <- data()[[input$histColumn]]
+    df <- data()
+    
+    # Check if we have at least 4 columns
+    if (ncol(df) < 4) {
+      plot.new()
+      text(0.5, 0.5, "Dataset must have at least 4 columns", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Check if the selected column is the error message
+    if (input$histColumn == "Dataset must have at least 4 columns") {
+      plot.new()
+      text(0.5, 0.5, "Please upload a dataset with at least 4 columns", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    x <- df[[input$histColumn]]
     
     if (!is.numeric(x)) {
       plot.new()
