@@ -42,7 +42,6 @@ ui <- fluidPage(
   
   # App title ----
   titlePanel("Data Center GPU Health Dashboard"),
-  
   # Global CSV file input ----
   fluidRow(
     column(12,
@@ -57,18 +56,16 @@ ui <- fluidPage(
       )
     )
   ),
-  
   # Main content area with tabs ----
   tabsetPanel(
     id = "mainTabs",
-        # Tab 4: How to Use
+     # Tab 4: How to Use
     tabPanel(
       "How to Use",
       card(
         card_header("Instructions"),
         h4("Getting Started"),
         p("Welcome to the Data Center GPU Health Dashboard! Follow these steps to analyze your data:"),
-        
         h4("Step 1: Upload Your Data"),
         p("• Click 'Choose a CSV file...' to upload your dataset"),
         p("• Make sure your CSV file contains numeric columns for analysis"),
@@ -79,24 +76,25 @@ ui <- fluidPage(
         p("• Enter your desired temperature threshold (default: 70°C)"),
         p("• These values help monitor GPU health and performance"),
         
-        h4("Step 3: Select Analysis Columns"),
-        p("• Choose a column for the X-axis of your scatter plot"),
-        p("• Choose a column for the Y-axis of your scatter plot"),
-        p("• Both columns must contain numeric data"),
+        h4("Step 3: Analyze Your Data"),
+        p("• View the data preview to see your uploaded dataset"),
+        p("• Check the average statistics for columns 4 and beyond"),
+        p("• Use the histogram dropdown to visualize data distribution"),
+        p("• Adjust histogram settings (bins, color) as needed"),
         
         h4("Understanding the Tabs"),
         tags$ul(
-          tags$li(tags$strong("Tab 1:"), "Contains your data preview and scatter plot analysis"),
-          tags$li(tags$strong("Tab 2:"), "Shows a histogram of your X-axis data distribution"),
-          tags$li(tags$strong("Tab 3:"), "Displays summary statistics about your dataset"),
+          tags$li(tags$strong("General:"), "Contains your data preview, average statistics for columns 4+, and histogram analysis"),
+          tags$li(tags$strong("By Rack:"), "Currently empty"),
+          tags$li(tags$strong("By GPU:"), "Currently empty"),
           tags$li(tags$strong("How to Use:"), "This instruction panel")
         ),
         
         h4("Tips for Best Results"),
         p("• Use CSV files with clear column headers"),
         p("• Ensure numeric columns don't contain text or special characters"),
-        p("• The scatter plot includes a trend line to show correlations"),
-        p("• Check Tab 3 for data quality information"),
+        p("• The histogram shows data distribution patterns"),
+        p("• Statistics are calculated for columns 4 and beyond"),
         
         h4("Troubleshooting"),
         p("• If plots don't appear, check that you've selected numeric columns"),
@@ -107,16 +105,8 @@ ui <- fluidPage(
     # Tab 1: General Analysis
     tabPanel(
       "General",
-      card(
-        card_header("Data Preview"),
-        tableOutput("dataPreview")
-      )
-    ),
-    # Tab 2: Additional Analysis
-    tabPanel(
-      "By Rack",
       page_sidebar(
-        title = "Distribution Analysis",
+        title = "General Analysis",
         sidebar = sidebar(
           # Input: Column selector for histogram ----
           selectInput(
@@ -129,9 +119,9 @@ ui <- fluidPage(
           numericInput(
             inputId = "bins",
             label = "Number of Bins:",
-            value = 30,
+            value = 100,
             min = 5,
-            max = 100
+            max = 1000
           ),
           # Input: Color selector ----
           selectInput(
@@ -148,33 +138,20 @@ ui <- fluidPage(
         )
       )
     ),
-    # Tab 3: Summary/Reports
+    # Tab 2: By Rack (Empty)
+    tabPanel(
+      "By Rack",
+      card(
+        card_header("By Rack Analysis"),
+        p("This tab is currently empty.")
+      )
+    ),
+    # Tab 3: By GPU (Empty)
     tabPanel(
       "By GPU",
-      page_sidebar(
-        title = "Summary Statistics",
-        sidebar = sidebar(
-          # Input: Summary type selector ----
-          selectInput(
-            inputId = "summaryType",
-            label = "Summary Type:",
-            choices = c("Basic Statistics", "Data Types", "Missing Values", "All Information"),
-            selected = "All Information"
-          ),
-          # Input: Decimal places ----
-          numericInput(
-            inputId = "decimalPlaces",
-            label = "Decimal Places:",
-            value = 2,
-            min = 0,
-            max = 10
-          )
-        ),
-        card(
-          card_header("Tab 3 Content"),
-          p("This tab displays comprehensive summary statistics about your dataset."),
-          verbatimTextOutput("summaryStats")
-        ),
+      card(
+        card_header("By GPU Analysis"),
+        p("This tab is currently empty.")
       )
     )
   )
@@ -199,22 +176,76 @@ server <- function(input, output) {
   })
  
   
-  # Update column choices when data changes (Tab 2)
+  # Update column choices when data changes (General tab histogram)
   observe({
     req(data())
-    column_names <- names(data())
-    updateSelectInput(
-      session = getDefaultReactiveDomain(),
-      inputId = "histColumn",
-      choices = column_names,
-      selected = column_names[1]  # Select first column by default
-    )
+    df <- data()
+    
+    # Check if we have at least 4 columns
+    if (ncol(df) >= 4) {
+      column_names <- names(df)[4:ncol(df)]
+      updateSelectInput(
+        session = getDefaultReactiveDomain(),
+        inputId = "histColumn",
+        choices = column_names,
+        selected = column_names[1]  # Select first column (column 4) by default
+      )
+    } else {
+      updateSelectInput(
+        session = getDefaultReactiveDomain(),
+        inputId = "histColumn",
+        choices = "Dataset must have at least 4 columns",
+        selected = "Dataset must have at least 4 columns"
+      )
+    }
   })
 
   # Display data preview
   output$dataPreview <- renderTable({
     req(data())
     head(data(), 5)  # Show all rows
+  })
+  
+  # Display average statistics for columns 4 through end
+  output$averageStats <- renderText({
+    req(data())
+    
+    df <- data()
+    
+    # Check if we have at least 4 columns
+    if (ncol(df) < 4) {
+      return("Dataset must have at least 4 columns to show statistics.")
+    }
+    
+    # Get columns 4 through end
+    cols_to_analyze <- names(df)[4:ncol(df)]
+    
+    summary_text <- paste("Average Statistics for Columns:\n\n")
+    
+    for (col in cols_to_analyze) {
+      col_data <- df[[col]]
+      
+      # Check if column is numeric
+      if (is.numeric(col_data)) {
+        col_data_clean <- col_data[!is.na(col_data)]
+        
+        if (length(col_data_clean) > 0) {
+          summary_text <- paste(summary_text, 
+            col, ":\n",
+            "  Mean:", round(mean(col_data_clean), 2), "\n",
+            "  Standard Deviation:", round(sd(col_data_clean), 2), "\n",
+            "  Median:", round(median(col_data_clean), 2), "\n",
+            "  Min:", round(min(col_data_clean), 2), "\n",
+            "  Max:", round(max(col_data_clean), 2), "\n")
+        } else {
+          summary_text <- paste(summary_text, col, ": No valid numeric data\n\n")
+        }
+      } else {
+        summary_text <- paste(summary_text, col, ": Non-numeric column\n\n")
+      }
+    }
+    
+    return(summary_text)
   })
   
 
@@ -288,7 +319,25 @@ observe({
   output$tab2Plot <- renderPlot({
     req(data(), input$histColumn)
     
-    x <- data()[[input$histColumn]]
+    df <- data()
+    
+    # Check if we have at least 4 columns
+    if (ncol(df) < 4) {
+      plot.new()
+      text(0.5, 0.5, "Dataset must have at least 4 columns", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Check if the selected column is the error message
+    if (input$histColumn == "Dataset must have at least 4 columns") {
+      plot.new()
+      text(0.5, 0.5, "Please upload a dataset with at least 4 columns", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    x <- df[[input$histColumn]]
     
     if (!is.numeric(x)) {
       plot.new()
@@ -314,90 +363,6 @@ observe({
          xlab = input$histColumn,
          main = paste("Histogram of", input$histColumn),
          ylab = "Frequency")
-  })
-  
-
-
-
-
-
-  # Tab 3: Summary statistics
-  output$summaryStats <- renderText({
-    req(data())
-    
-    df <- data()
-    decimal_places <- input$decimalPlaces
-    
-    if (input$summaryType == "Basic Statistics") {
-      summary_text <- paste(
-        "Basic Statistics:\n",
-        "Number of rows:", nrow(df), "\n",
-        "Number of columns:", ncol(df), "\n\n"
-      )
-      
-      # Add basic stats for numeric columns
-      numeric_cols <- sapply(df, is.numeric)
-      if (any(numeric_cols)) {
-        summary_text <- paste(summary_text, "Numeric Columns Summary:\n")
-        for (col in names(df)[numeric_cols]) {
-          col_data <- df[[col]][!is.na(df[[col]])]
-          if (length(col_data) > 0) {
-            summary_text <- paste(summary_text, 
-              col, ":\n",
-              "  Mean:", round(mean(col_data), decimal_places), "\n",
-              "  Median:", round(median(col_data), decimal_places), "\n",
-              "  Min:", round(min(col_data), decimal_places), "\n",
-              "  Max:", round(max(col_data), decimal_places), "\n\n")
-          }
-        }
-      }
-      
-    } else if (input$summaryType == "Data Types") {
-      summary_text <- paste(
-        "Data Types:\n",
-        "Column names and types:\n"
-      )
-      
-      for (col in names(df)) {
-        summary_text <- paste(summary_text, col, ":", class(df[[col]]), "\n")
-      }
-      
-    } else if (input$summaryType == "Missing Values") {
-      summary_text <- paste(
-        "Missing Values Analysis:\n"
-      )
-      
-      for (col in names(df)) {
-        missing_count <- sum(is.na(df[[col]]))
-        missing_pct <- round((missing_count / nrow(df)) * 100, decimal_places)
-        summary_text <- paste(summary_text, 
-          col, ": ", missing_count, " missing (", missing_pct, "%)\n")
-      }
-      
-    } else { # All Information
-      summary_text <- paste(
-        "Complete Dataset Summary:\n",
-        "Number of rows:", nrow(df), "\n",
-        "Number of columns:", ncol(df), "\n\n",
-        "Column names:\n",
-        paste(names(df), collapse = ", "), "\n\n",
-        "Data types:\n"
-      )
-      
-      for (col in names(df)) {
-        summary_text <- paste(summary_text, col, ":", class(df[[col]]), "\n")
-      }
-      
-      summary_text <- paste(summary_text, "\nMissing Values:\n")
-      for (col in names(df)) {
-        missing_count <- sum(is.na(df[[col]]))
-        missing_pct <- round((missing_count / nrow(df)) * 100, decimal_places)
-        summary_text <- paste(summary_text, 
-          col, ": ", missing_count, " missing (", missing_pct, "%)\n")
-      }
-    }
-    
-    return(summary_text)
   })
 }
 
