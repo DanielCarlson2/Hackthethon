@@ -39,7 +39,9 @@ Step 2: Upload Your CSV File
 - Select your desired CSV file.
 - The app will automatically load your dataset and open the How To Use page.
 
-Example: ![Step 1 example GIF](InstructionGIFs/UploadingCSV.gif)
+Example:
+
+![Step 1 example GIF](InstructionGIFs/LoadCSV.gif)
 
 Step 3: Select a Focus Metric Tab
 - Choose one of the metric tabs located along the top navigation bar:
@@ -55,19 +57,24 @@ Step 3A: General Tab
   - Control how many data points are displayed.
   - Choose how data points are grouped (by rack, GPU, or time).
 
-Example: ![Step 3a example GIF](InstructionGIFs/GeneralTab.gif)
+Example: 
+![Step 3a example GIF](InstructionGIFs/GeneralTab.gif)
 
 Step 3B: Rack Tab
 - Displays GPU performance on a per-rack basis.
 - Uses a performance index (Ppk) to determine which racks require attention.
 - Racks are color-coded according to Ppk values for a visual representation of which racks need maintenance.
 
+Example: 
+![Step 3b example GIF](InstructionGIFs/ByRackTab.gif)
+
 Step 3C: GPU Tab
 - Allows users to set specification limits (upper and lower) for key metrics.
 - Plots GPU failures over time to identify trends and timing.
 - Displays detailed data showing where, when, and how each GPU failure occurred.
 
-Example: ![Step 3c example GIF](InstructionGIFs/ByGPUTab.gif)
+Example: 
+![Step 3c example GIF](InstructionGIFs/ByGPUTab.gif)
 
 ### Codebook for CSV Data Inputs:
 
