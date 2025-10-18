@@ -17,33 +17,37 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 ### How to Install the Tool
 
-1.) Have R and R Studio downloaded
-2.) Clone the github repository or download the ZIP file from github and open it in RStudio
-3.) Place your .csv files in the Dashboard
-4.) Input the following GPU specification limit information:
-    a.) Max Temperature
-    b.) Max Memory Utilization
-    c.) Max Power Usage
+Have R and R Studio downloaded
+Clone the github repository or download the ZIP file from github and open it in RStudio
+Place your .csv files in the Dashboard
+Input the following GPU specification limit information:
+Max Temperature
+Max Memory Utilization
+Max Power Usage
 
 ### How to use 
 
 GIF OF USER USING 
 
-### Codebook for CSV data inputs
+### Codebook for CSV Data Inputs
 
-Variable | Type |  Description | Unit
-GPU_Unique_ID | Integer|  Unique identifier for each GPU in the datacenter | ID number
-Rack_ID | Integer | Unique ID locating GPUs in groups “Racks” | ID number
-Time_Period | Integer | Time of day data is pulled from the datacenter | Hour
-Average_GPU_Temperature | Numeric | Average Temperature of each GPU over the Time Period | Celsius
-Peak_GPU_Temperature | Numeric | Highest Temperature of a GPU over the Time Period | Celsius
-Average_GPU_Power_Usage | Numeric | Average Power Usage of each GPU over the Time Period
-Peak_GPU_Power_Usage | Numeric | Highest power usage of a GPU over the Time Period | Watts
-Average_GPU_Memory_Usage | Numeric | Average Memory Usage of each GPU over the Time Period | Percentage
-Peak_GPU_Memory_Usage | Numeric | Highest Memory Usage of a GPU over the Time Period | Percentage
+| Variable                    | Type     | Description                                               | Unit        |
+|-----------------------------|----------|-----------------------------------------------------------|-------------|
+| GPU_Unique_ID              | Integer  | Unique identifier for each GPU in the datacenter          | ID number   |
+| Rack_ID                    | Integer  | Unique ID locating GPUs in groups called “Racks”          | ID number   |
+| Time_Period                | Integer  | Time of day data is pulled from the datacenter            | Hour        |
+| Average_GPU_Temperature    | Numeric  | Average temperature of each GPU over the time period      | Celsius     |
+| Peak_GPU_Temperature       | Numeric  | Highest temperature of a GPU over the time period         | Celsius     |
+| Average_GPU_Power_Usage    | Numeric  | Average power usage of each GPU over the time period      | Watts       |
+| Peak_GPU_Power_Usage       | Numeric  | Highest power usage of a GPU over the time period         | Watts       |
+| Average_GPU_Memory_Usage   | Numeric  | Average memory usage of each GPU over the time period     | Percentage  |
+| Peak_GPU_Memory_Usage      | Numeric  | Highest memory usage of a GPU over the time period        | Percentage  |
+
 
 ### Read Me for CSV Dataset Generators 
-
+<details> 
+<summary>Old Title</summary>
+  
 #### General overview/purpose
 There are three CSV Dataset Generators depending on the type of GPU failure scenario you wish to simulate. 
 
@@ -58,20 +62,19 @@ Download the .csv generator files from the github repository.
 Run in R or RStudio
 
 #### How to use .csv generator 
-Open the .csv generator code that you just installed 
-With in the generator code modify the sections labelled with comments
-The following can be changed:
-The number of racks, GPUs, and time period
-(If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead
-The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer
-Once you are happy with the specifications that you have chosen, run the code! 
+- Open the .csv generator code that you just installed 
+- With in the generator code modify the sections labelled with comments
+  -The following can be changed:
+    -The number of racks, GPUs, and time period
+    -(If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead
+    -The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer
+- Once you are happy with the specifications that you have chosen, run the code! 
 
-
-Dataset Notes:
+#### Our Dataset Notes
 For our generated simulated datasets we used the following inputs
 Number of Racks: 10
 GPUs per Rack: 5
 Time Periods: 24 (24 hour day, so data is collected per hour)
 Total Data Points: 1200
 Temperature Range: 30 ℃ to 90 ℃
-
+</details>
