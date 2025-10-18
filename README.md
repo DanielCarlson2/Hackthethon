@@ -11,11 +11,11 @@ Create an intuitive Shinyapp dashboard tool to help users find existing hardware
 
 ### Project Scope:
 
-We have been contracted to develop a tool that will analyze GPU data for datacenters. The tool will be used to inform datacenter maintenance staff and onsite operators of possible individual GPU failures and GPU racks under high stress or full failure. High stress is defined as a GPU overheating, high power draw, and high memory usage. Maintenance staff will be able to enter desired upper and lower specification limits for GPU temperature, power consumption, and memory usage. This workspace will take CSV format data. The CSV must have the pictured column names in the same order. Each variable used is listed and described in the Codebook for CSV Data Inputs section. 
+We have been contracted to develop a tool that will analyze GPU data for datacenters. The tool will be used to inform datacenter maintenance staff and onsite operators of possible individual GPU failures and GPU racks under high stress or full failure. High stress is defined as a GPU overheating, high power draw, and high memory usage. Maintenance staff will be able to enter desired upper and lower specification limits for GPU temperature, power consumption, and memory usage. This workspace will take CSV format data. The CSV data must be formatted with the same column names and order as pictured below. Each variable used is listed and described in the Codebook for CSV Data Inputs section. 
 
 Example:
 
-![CSV_column_example]()
+![CSV_column_example](InstructionGIFs/CSVColumnNameEx.png)
 
 
 Our scope includes GPUs organized into racks in the specified datacenter from our client. The scope does not include datacenters using different types of GPUs in the same datacenter (however this feature could be implemented in the future). Also, the scope does not take into account the cost of some GPUs being higher than others and does not have a system to prioritize specified GPUs over others. 
