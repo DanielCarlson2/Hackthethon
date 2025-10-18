@@ -1,4 +1,5 @@
-#install.packages("bslib")
+
+#install.packages("DT")
 
 library(shiny)
 library(bslib)
@@ -65,7 +66,7 @@ ui <- fluidPage(
           inputId = "csvFile",
           label = "Upload CSV File:",
           accept = c(".csv"),
-          placeholder = "Choose a CSV file..."
+          placeholder = "Click 'Browse' and select CSV..."
         )
       )
     )
@@ -85,35 +86,48 @@ ui <- fluidPage(
         p("• Ensure your CSV has columns: GPU ID, GPU Rack, Hour, Average GPU Temp [C], Peak GPU Temp[C], Average GPU Power Usage [W], Peak GPU Power usage [W], Average GPU Memory Usage [%], Peak GPU memory Usage [%]"),
         p("• The app will automatically detect and display your data"),
         
-        h4("Step 2: General Analysis"),
-        p("• View the histogram at the top to see data distribution with 95% confidence intervals"),
-        p("• Data outside 95% confidence will be highlighted in different colors"),
-        p("• Check the data preview with updated column titles"),
-        p("• Review average statistics for temperature, power, and memory usage"),
-        
-        h4("Step 3: Advanced Analysis"),
-        p("• Use 'By Rack' tab to analyze specific GPU racks"),
-        p("• Use 'By GPU' tab for failure detection and threshold analysis"),
-        p("• Adjust time periods and sorting options as needed"),
-        
-        h4("Understanding the Tabs"),
+        h4("Step 2: Select Analysis Tab"),
+        p("• Choose the appropriate tab for your analysis needs:"),
         tags$ul(
-          tags$li(tags$strong("General:"), "Histogram analysis with confidence intervals, data preview, and average statistics for key metrics"),
-          tags$li(tags$strong("By Rack:"), "Rack-specific analysis with control charts and filtering"),
-          tags$li(tags$strong("By GPU:"), "Individual GPU failure detection and threshold monitoring"),
-          tags$li(tags$strong("How to Use:"), "This instruction panel")
+          tags$li(tags$strong("General:"), "View comprehensive statistics and data preview with customizable sorting and filtering"),
+          tags$li(tags$strong("By Rack:"), "Analyze specific GPU racks with Ppk (Process Performance Index) and control charts"),
+          tags$li(tags$strong("By GPU:"), "Detect GPU failures and monitor individual GPU performance against user identified thresholds")
         ),
         
-        h4("Key Features"),
-        p("• 95% confidence interval visualization in histograms"),
-        p("• Automatic outlier detection with color coding"),
-        p("• Focus on average metrics (temperature, power, memory)"),
-        p("• Real-time failure detection and alerting"),
+        h4("Step 3: Configure Analysis Settings"),
+        p("• Use the left sidebar to input your desired values:"),
+        p("• Adjust time periods, thresholds, and filtering options"),
+        p("• Click buttons or run analysis to view results"),
+        
+        h4("CSV File Organization"),
+        p("For optimal results, organize your CSV file with columns in the following order:"),
+        tags$ol(
+          tags$li("GPU ID - Unique identifier for each GPU"),
+          tags$li("GPU Rack - Rack location/identifier"),
+          tags$li("Hour - Time period (1-24)"),
+          tags$li("Average GPU Temp [C] - Average temperature in Celsius"),
+          tags$li("Peak GPU Temp[C] - Peak temperature in Celsius"),
+          tags$li("Average GPU Power Usage [W] - Average power consumption in Watts"),
+          tags$li("Peak GPU Power usage [W] - Peak power consumption in Watts"),
+          tags$li("Average GPU Memory Usage [%] - Average memory utilization percentage"),
+          tags$li("Peak GPU memory Usage [%] - Peak memory utilization percentage")
+        ),
+        p("Ensure your data is numeric where appropriate and that column headers match the expected format for best results."),
         
         h4("Troubleshooting"),
         p("• If plots don't appear, check that you've selected numeric columns"),
         p("• Error messages will guide you if data issues are detected"),
-        p("• Make sure your CSV file follows the expected column format")
+        p("• Make sure your CSV file follows the expected column format"),
+        
+        h4("Authors"),
+        p("This Data Center GPU Health Dashboard was developed by:"),
+        tags$ul(
+          tags$li("Daniel Carlson, M.Eng Aerospace Engineering, Cornell University"),
+          tags$li("Rene Umeh, M.Eng Mechanical Engineering, Cornell University"),
+          tags$li("Nevin Motto, M.Eng Mechanical Engineering, Cornell University"),
+          tags$li("Evelyne Morisseau, Ph.D. Mechanical Engineering, Cornell University"),
+          tags$li("Charlie Gagliardo, M.Eng Mechanical Engineering, Cornell University")
+        )
       )
     ),
     # Tab 1: General Analysis
@@ -148,6 +162,13 @@ ui <- fluidPage(
             choices = c("Time Period" = "time_period", "GPU Rack" = "gpu_rack", "GPU ID" = "gpu_id"),
             selected = "time_period"
           )
+        ),
+        # Helper Instructions
+        div(
+          style = "margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; border-left: 4px solid #2196F3;",
+          h6("📋 Instructions:", style = "margin-bottom: 8px; font-weight: bold; color: #1976D2;"),
+          p("💡 Adjust the time period, data points, and sorting options on the left to customize your analysis.", 
+            style = "margin: 0; font-size: 14px; color: #424242;")
         ),
         # Statistics Cards - Three side by side (moved to top)
         fluidRow(
@@ -254,7 +275,7 @@ ui <- fluidPage(
         div(
           style = "margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; border-left: 4px solid #2196F3;",
           h6("📋 Instructions:", style = "margin-bottom: 8px; font-weight: bold; color: #1976D2;"),
-          p("💡 Click on any rack button below to analyze that specific rack.", 
+          p("💡 Input your desired values on the left and select a specific rack below for analysis.", 
             style = "margin: 0; font-size: 14px; color: #424242;"),
           p("📊 Ppk (Process Performance Index) measures how well your rack performs relative to specification limits. Higher Ppk values indicate better process capability and fewer quality issues.", 
             style = "margin: 5px 0 0 0; font-size: 13px; color: #666; font-style: italic;")
@@ -266,7 +287,7 @@ ui <- fluidPage(
           div(style = "display: flex; flex-wrap: wrap; gap: 10px;",
             span(style = "background-color: #35B779; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🟢 Ppk ≥ 1.67 (Excellent)"),
             span(style = "background-color: #1F9E89; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔵 Ppk ≥ 1.33 (Good)"),
-            span(style = "background-color: #87CEEB; color: black; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔵 Ppk ≥ 1.0 (Acceptable)"),
+            span(style = "background-color: #DAA520; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🟡 Ppk ≥ 1.0 (Acceptable)"),
             span(style = "background-color: #F1605D; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔴 Ppk ≥ 0.67 (Poor)"),
             span(style = "background-color: #8B0000; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔴 Ppk < 0.67 (Very Poor)")
           )
@@ -350,6 +371,13 @@ ui <- fluidPage(
             class = "btn-primary",
             style = "width: 100%; margin-top: 20px;"
           )
+        ),
+        # Helper Instructions
+        div(
+          style = "margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; border-left: 4px solid #2196F3;",
+          h6("📋 Instructions:", style = "margin-bottom: 8px; font-weight: bold; color: #1976D2;"),
+          p("💡 Set your failure thresholds on the left and click 'Analyze GPU Failures' to detect problematic GPUs.", 
+            style = "margin: 0; font-size: 14px; color: #424242;")
         ),
         # Main content area
         fluidRow(
@@ -455,6 +483,9 @@ server <- function(input, output) {
       time_col <- names(df)[3]
       df <- df[df[[time_col]] == as.numeric(input$selectedHour), ]
     }
+    
+    # Hide the last column (Peak GPU memory Usage [%])
+    df <- df[, -ncol(df)]
     
     # Show the specified number of data points
     num_points <- as.numeric(input$dataPoints)
@@ -595,7 +626,7 @@ server <- function(input, output) {
     } else if (ppk >= 1.33) {
       return("#1F9E89")  # Teal - Good (5-sigma)
     } else if (ppk >= 1.0) {
-      return("#87CEEB")  # Light blue - Acceptable (3-sigma)
+      return("#DAA520")  # Dark yellow - Acceptable (3-sigma)
     } else if (ppk >= 0.67) {
       return("#F1605D")  # Red - Poor (2-sigma)
     } else {
