@@ -27,8 +27,42 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 ### How to use:  
 
-Prerequistie: Follow the _____ instructions first if you do not have a csv file ready
+Prerequisite: Follow the CSV generator instructions first if you do not have a csv file ready to upload.
+
 Step 1: Open the Shiny App Tool
+- Launch the Shiny application in RStudio or from the console.
+- The interface will open automatically in your web browser.
+Example:[GIF1]
+
+Step 2: Upload Your CSV File
+- Use the file upload box on the Home or Upload page.
+- Select your desired .csv file.
+- The app will automatically load your dataset and open the How To Use page.
+Example:[GIF2]
+
+Step 3: Select a Focus Metric Tab
+- Choose one of the metric tabs located along the top navigation bar:
+  - General
+  - Rack
+  - Individual GPU
+
+Step 3a: General Tab
+- Provides an overview of all GPU performance metrics (Temperature, Power Usage, and Memory Usage).
+- The top-level statistical summaries can be filtered by hour to focus on specific time periods.
+- You can:
+  - Preview the uploaded dataset.
+  - Control how many data points are displayed.
+  - Choose how data points are grouped (by rack, GPU, or time).
+
+Step 3b: Rack Tab
+- Displays GPU performance on a per-rack basis.
+- Uses a performance index (Ppk) to determine which racks require attention.
+- Racks are color-coded according to Ppk values for a visual representation of which racks need maintenance.
+
+Step 3c: GPU Tab
+- Allows users to set specification limits (upper and lower) for key metrics.
+- Plots GPU failures over time to identify trends and timing.
+- Displays detailed data showing where, when, and how each GPU failure occurred.
 
 ### Codebook for CSV Data Inputs:
 
