@@ -130,25 +130,24 @@ ui <- fluidPage(
             choices = NULL,
             selected = NULL
           ),
-          # Input: Number of bins ----
-          numericInput(
-            inputId = "bins",
-            label = "Number of Bins:",
-            value = 30,
-            min = 5,
-            max = 1000
-          ),
-          # Input: Color selector ----
+          # Input: Number of data points to show ----
           selectInput(
-            inputId = "histColor",
-            label = "Histogram Color:",
-            choices = c("Mint Green" = "#20B2AA", "Pale Green" = "#98FB98", "Turquoise" = "#40E0D0", "Sea Green" = "#2E8B57"),
-            selected = "#20B2AA"
+            inputId = "dataPoints",
+            label = "Number of Data Points:",
+            choices = c("3" = "3", "5" = "5", "10" = "10", "15" = "15", "20" = "20", "25" = "25", "50" = "50"),
+            selected = "3"
+          ),
+          # Input: Sorting option ----
+          selectInput(
+            inputId = "sortOption",
+            label = "Sort Data By:",
+            choices = c("All Hours" = "all_hours", "Time Period" = "time_period", "All Bins" = "all_bins", "Bin Number" = "bin_number"),
+            selected = "all_hours"
           )
         ),
         card(
         card_header("Data Preview"),
-        p("Shows data for the selected time period. Use the dropdown above to filter by specific hours."),
+        p("Shows data with customizable sorting and number of rows. Use the dropdowns above to control display options."),
         tableOutput("dataPreview")
       ),
       card(
@@ -158,7 +157,7 @@ ui <- fluidPage(
       ),
       card(
         card_header("Data Distribution"),
-        p("Histogram showing the distribution of selected metrics for the chosen time period."),
+        p("Histogram showing the distribution of selected metrics for the chosen time period. Fixed mint green color with 30 bins."),
         plotOutput(outputId= "generalHistogram")
       )
     ),
@@ -342,6 +341,23 @@ server <- function(input, output) {
     
     df <- data()
     
+    # Apply sorting based on sortOption
+    if (input$sortOption == "time_period") {
+      # Sort by time period (column 3)
+      time_col <- names(df)[3]
+      df <- df[order(df[[time_col]]), ]
+    } else if (input$sortOption == "bin_number") {
+      # Sort by GPU cluster ID (column 2) as bin number
+      cluster_col <- names(df)[2]
+      df <- df[order(df[[cluster_col]]), ]
+    } else if (input$sortOption == "all_bins") {
+      # Sort by cluster ID then time period
+      cluster_col <- names(df)[2]
+      time_col <- names(df)[3]
+      df <- df[order(df[[cluster_col]], df[[time_col]]), ]
+    }
+    # For "all_hours", no additional sorting needed
+    
     # Filter data by selected hour if not "all"
     if (input$selectedHour != "all") {
       # Assuming Time_Period is column 3 (index 3)
@@ -349,7 +365,9 @@ server <- function(input, output) {
       df <- df[df[[time_col]] == as.numeric(input$selectedHour), ]
     }
     
-    head(df, 10)  # Show first 10 rows of filtered data
+    # Show the specified number of data points
+    num_points <- as.numeric(input$dataPoints)
+    head(df, num_points)
   })
   
   # Display average statistics for columns 4 through end
@@ -547,10 +565,10 @@ observe({
     # Filter data for selected rack
     rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
     
-    # Create histogram with custom settings
+    # Create histogram with fixed mint green color and 30 bins
     hist(rack_data[[input$histColumn]], 
-         breaks = input$bins,
-         col = input$histColor, 
+         breaks = 30,
+         col = "#20B2AA",  # Fixed mint green color
          border = "white",
          xlab = input$histColumn,
          main = paste("Histogram of", input$histColumn, "for Rack:", selectedRack()),
@@ -597,10 +615,10 @@ observe({
       return()
     }
     
-    # Create histogram with custom settings
+    # Create histogram with fixed mint green color and 30 bins
     hist(x, 
-         breaks = input$bins,
-         col = input$histColor, 
+         breaks = 30,
+         col = "#20B2AA",  # Fixed mint green color
          border = "white",
          xlab = input$histColumn,
          main = paste("Histogram of", input$histColumn),
@@ -661,10 +679,10 @@ observe({
       plot_title <- paste("Histogram of", input$histColumn, "(Hour", input$selectedHour, ")")
     }
     
-    # Create histogram with custom settings
+    # Create histogram with fixed mint green color and 30 bins
     hist(x, 
-         breaks = input$bins,
-         col = input$histColor, 
+         breaks = 30,
+         col = "#20B2AA",  # Fixed mint green color
          border = "white",
          xlab = input$histColumn,
          main = plot_title,
