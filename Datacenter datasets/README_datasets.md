@@ -13,3 +13,6 @@ We have been contracted to develop a tool that will analyze GPU data for datacen
 
 Our scope includes GPUs organized into racks in the specified datacenter from our client. The scope does not include datacenters using different types of GPUs in the same datacenter (however this feature could be implemented in the future). Also, the scope does not take into account the cost of some GPUs being higher than others and does not have a system to prioritize specified GPUs over others. 
 
+## How to Install the Tool
+
+##
