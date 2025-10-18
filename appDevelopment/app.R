@@ -3,6 +3,7 @@
 library(shiny)
 library(bslib)
 library(dplyr)
+library(DT)
 
 
 # Define UI for app that draws a histogram ----
@@ -21,21 +22,18 @@ ui <- fluidPage(
       transition: all 0.3s ease;
     }
     .boxButton:hover {
-      background-color: #31688E;
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(68, 1, 84, 0.3);
     }
     .boxButton.selected {
-      background-color: #FF6347;
-      color: white;
+      border: 4px solid #FFFFFF !important;
+      box-shadow: 0 0 0 2px #2D2D2D, 0 6px 12px rgba(0, 0, 0, 0.3) !important;
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(255, 99, 71, 0.4);
-      border: 2px solid #FF4500;
+      position: relative;
     }
     .boxButton.selected:hover {
-      background-color: #FF4500;
       transform: translateY(-3px);
-      box-shadow: 0 8px 16px rgba(255, 69, 0, 0.5);
+      box-shadow: 0 0 0 2px #2D2D2D, 0 8px 16px rgba(0, 0, 0, 0.4) !important;
     }
   ")),
   # Custom Viridis-themed design ----
@@ -207,7 +205,7 @@ ui <- fluidPage(
           numericInput(
             inputId = "rackTempMax",
             label = "Max Temperature (°C):",
-            value = 90,
+            value = 100,
             min = 0,
             max = 200
           ),
@@ -225,6 +223,20 @@ ui <- fluidPage(
             min = 0,
             max = 100
           ),
+          numericInput(
+            inputId = "rackPowerMax",
+            label = "Max Power Usage (W):",
+            value = 300,
+            min = 0,
+            max = 1000
+          ),
+          numericInput(
+            inputId = "rackPowerMin",
+            label = "Min Power Usage (W):",
+            value = 50,
+            min = 0,
+            max = 1000
+          ),
           selectInput(
             inputId = "rackMetric",
             label = "Metric to Display:",
@@ -238,6 +250,27 @@ ui <- fluidPage(
         ),
       card(
         card_header("By Rack Analysis"),
+        # Helper Instructions
+        div(
+          style = "margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; border-left: 4px solid #2196F3;",
+          h6("📋 Instructions:", style = "margin-bottom: 8px; font-weight: bold; color: #1976D2;"),
+          p("💡 Click on any rack button below to analyze that specific rack.", 
+            style = "margin: 0; font-size: 14px; color: #424242;"),
+          p("📊 Ppk (Process Performance Index) measures how well your rack performs relative to specification limits. Higher Ppk values indicate better process capability and fewer quality issues.", 
+            style = "margin: 5px 0 0 0; font-size: 13px; color: #666; font-style: italic;")
+        ),
+        # Ppk Color Legend
+        div(
+          style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+          h6("Ppk Color Legend:", style = "margin-bottom: 10px; font-weight: bold;"),
+          div(style = "display: flex; flex-wrap: wrap; gap: 10px;",
+            span(style = "background-color: #35B779; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🟢 Ppk ≥ 1.67 (Excellent)"),
+            span(style = "background-color: #1F9E89; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔵 Ppk ≥ 1.33 (Good)"),
+            span(style = "background-color: #87CEEB; color: black; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔵 Ppk ≥ 1.0 (Acceptable)"),
+            span(style = "background-color: #F1605D; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔴 Ppk ≥ 0.67 (Poor)"),
+            span(style = "background-color: #8B0000; color: white; padding: 5px 10px; border-radius: 3px; font-size: 12px;", "🔴 Ppk < 0.67 (Very Poor)")
+          )
+        ),
         # 👉 Add dynamic rack buttons here
         uiOutput("rackButtons"),
       ),
@@ -253,7 +286,7 @@ ui <- fluidPage(
        card(
          card_header("GPU Data for Selected Rack"),
          p("Detailed data for all GPUs in the selected rack:"),
-         tableOutput("rackGPUTable")
+         dataTableOutput("rackGPUTable")
        )
      )
     ),
@@ -515,6 +548,61 @@ server <- function(input, output) {
   })
   
 
+  # Function to calculate Ppk for a rack
+  calculate_ppk <- function(rack_data, metric_col, spec_upper, spec_lower) {
+    if (nrow(rack_data) == 0) return(NA)
+    
+    metric_data <- as.numeric(rack_data[[metric_col]])
+    metric_data <- metric_data[!is.na(metric_data)]
+    
+    if (length(metric_data) < 2) return(NA)
+    
+    mean_val <- mean(metric_data)
+    std_val <- sd(metric_data)
+    
+    # Check for valid standard deviation
+    if (is.na(std_val) || std_val == 0) return(NA)
+    
+    # Calculate Ppk
+    if (!is.na(spec_upper) && !is.na(spec_lower)) {
+      # Both limits available
+      ppk_upper <- (spec_upper - mean_val) / (3 * std_val)
+      ppk_lower <- (mean_val - spec_lower) / (3 * std_val)
+      ppk <- min(ppk_upper, ppk_lower, na.rm = TRUE)
+    } else if (!is.na(spec_upper)) {
+      # Only upper limit
+      ppk <- (spec_upper - mean_val) / (3 * std_val)
+    } else if (!is.na(spec_lower)) {
+      # Only lower limit
+      ppk <- (mean_val - spec_lower) / (3 * std_val)
+    } else {
+      # No specification limits
+      return(NA)
+    }
+    
+    # Check for valid Ppk result
+    if (is.na(ppk) || is.infinite(ppk)) return(NA)
+    
+    return(ppk)
+  }
+  
+  # Function to get color based on Ppk value
+  get_ppk_color <- function(ppk) {
+    if (is.na(ppk)) return("#8B0000")  # Default dark red
+    
+    if (ppk >= 1.67) {
+      return("#35B779")  # Green - Excellent (6-sigma)
+    } else if (ppk >= 1.33) {
+      return("#1F9E89")  # Teal - Good (5-sigma)
+    } else if (ppk >= 1.0) {
+      return("#87CEEB")  # Light blue - Acceptable (3-sigma)
+    } else if (ppk >= 0.67) {
+      return("#F1605D")  # Red - Poor (2-sigma)
+    } else {
+      return("#8B0000")  # Dark red - Very poor
+    }
+  }
+  
   # Rack buttons
 output$rackButtons <- renderUI({
   req(data())
@@ -529,14 +617,45 @@ output$rackButtons <- renderUI({
   n_rows <- ceiling(n_racks / n_cols)
   
   button_list <- lapply(racks, function(rack) {
+    # Get rack data
+    rack_data <- data()[data()$Rack_ID == rack, ]
+    
+    # Calculate Ppk based on selected metric
+    metric_col <- switch(input$rackMetric,
+      "temperature" = names(rack_data)[4],  # Average_GPU_Temperature
+      "memory" = names(rack_data)[8],       # Average_GPU_Memory_Usage
+      "power" = names(rack_data)[6],         # Average_GPU_Power_Usage
+      names(rack_data)[4]  # Default to temperature
+    )
+    
+    # Get specification limits
+    spec_upper <- if (input$rackMetric == "temperature") input$rackTempMax
+                  else if (input$rackMetric == "memory") input$rackMemMax
+                  else if (input$rackMetric == "power") input$rackPowerMax
+                  else NA
+    
+    spec_lower <- if (input$rackMetric == "memory") input$rackMemMin 
+                  else if (input$rackMetric == "power") input$rackPowerMin
+                  else NA
+    
+    # Calculate Ppk
+    ppk <- calculate_ppk(rack_data, metric_col, spec_upper, spec_lower)
+    
+    # Get color based on Ppk
+    ppk_color <- get_ppk_color(ppk)
+    
     # Check if this rack is selected
     is_selected <- !is.null(selectedRack()) && selectedRack() == rack
     button_class <- if (is_selected) "boxButton selected" else "boxButton"
     
+    # Create button with Ppk-based styling
+    ppk_text <- if (!is.na(ppk)) paste0(" (Ppk: ", round(ppk, 2), ")") else " (No Spec)"
+    
     actionButton(
       inputId = paste0("rack_", rack),
-      label = paste("Rack:", rack),
-      class = button_class
+      label = paste("Rack:", rack, ppk_text),
+      class = button_class,
+      style = if (!is_selected) paste0("background-color: ", ppk_color, "; color: white;")
     )
   })
   
@@ -672,7 +791,8 @@ observe({
     metric_col <- switch(input$rackMetric,
       "temperature" = col_names[4],  # Average_GPU_Temperature
       "memory" = col_names[8],       # Average_GPU_Memory_Usage
-      "power" = col_names[6]         # Average_GPU_Power_Usage
+      "power" = col_names[6],         # Average_GPU_Power_Usage
+      col_names[4]  # Default to temperature
     )
     
     # Group by time period and calculate averages
@@ -722,8 +842,11 @@ observe({
     } else if (input$rackMetric == "memory") {
       spec_upper <- input$rackMemMax
       spec_lower <- input$rackMemMin
-    } else {  # power
-      spec_upper <- NA  # No power limits specified in current inputs
+    } else if (input$rackMetric == "power") {
+      spec_upper <- input$rackPowerMax
+      spec_lower <- input$rackPowerMin
+    } else {
+      spec_upper <- NA
       spec_lower <- NA
     }
     
@@ -817,7 +940,8 @@ observe({
     metric_col <- switch(input$rackMetric,
       "temperature" = col_names[4],  # Average_GPU_Temperature
       "memory" = col_names[8],       # Average_GPU_Memory_Usage
-      "power" = col_names[6]         # Average_GPU_Power_Usage
+      "power" = col_names[6],         # Average_GPU_Power_Usage
+      col_names[4]  # Default to temperature
     )
     
     # Get metric data
@@ -866,6 +990,7 @@ observe({
     # Add specification limits if available
     if (input$rackMetric == "temperature") {
       spec_upper <- input$rackTempMax
+      spec_lower <- NA
       stats_text <- paste(stats_text,
         "Specification Limits:\n",
         "  Upper Spec Limit:", spec_upper, "°C\n\n")
@@ -876,13 +1001,55 @@ observe({
         "Specification Limits:\n",
         "  Upper Spec Limit:", spec_upper, "%\n",
         "  Lower Spec Limit:", spec_lower, "%\n\n")
+    } else if (input$rackMetric == "power") {
+      spec_upper <- input$rackPowerMax
+      spec_lower <- input$rackPowerMin
+      stats_text <- paste(stats_text,
+        "Specification Limits:\n",
+        "  Upper Spec Limit:", spec_upper, "W\n",
+        "  Lower Spec Limit:", spec_lower, "W\n\n")
+    }
+    
+    # Calculate and add Ppk
+    ppk <- calculate_ppk(rack_data, metric_col, spec_upper, spec_lower)
+    
+    if (!is.na(ppk)) {
+      # Determine Ppk interpretation
+      if (ppk >= 1.67) {
+        ppk_interpretation <- "Excellent (6-sigma process)"
+      } else if (ppk >= 1.33) {
+        ppk_interpretation <- "Good (5-sigma process)"
+      } else if (ppk >= 1.0) {
+        ppk_interpretation <- "Acceptable (3-sigma process)"
+      } else if (ppk >= 0.67) {
+        ppk_interpretation <- "Poor (2-sigma process)"
+      } else {
+        ppk_interpretation <- "Very Poor (unacceptable)"
+      }
+      
+      stats_text <- paste(stats_text,
+        "Process Performance Index (Ppk):\n",
+        "  Ppk Value:", round(ppk, 3), "\n",
+        "  Interpretation:", ppk_interpretation, "\n\n",
+        "Ppk Description:\n",
+        "  Ppk measures how well the process performs relative to specification limits.\n",
+        "  Higher values indicate better process capability and fewer defects.\n",
+        "  Ppk ≥ 1.67 = Excellent, Ppk ≥ 1.33 = Good, Ppk ≥ 1.0 = Acceptable,\n",
+        "  Ppk ≥ 0.67 = Poor, Ppk < 0.67 = Very Poor\n")
+    } else {
+      stats_text <- paste(stats_text,
+        "Process Performance Index (Ppk):\n",
+        "  Ppk Value: Cannot calculate (insufficient data or no specification limits)\n\n",
+        "Ppk Description:\n",
+        "  Ppk measures how well the process performs relative to specification limits.\n",
+        "  Higher values indicate better process capability and fewer defects.\n")
     }
     
     return(stats_text)
   })
   
-  # Rack GPU Data Table
-  output$rackGPUTable <- renderTable({
+  # Rack GPU Data Table with Pagination
+  output$rackGPUTable <- DT::renderDT({
     req(data(), selectedRack())
     
     # Filter data for selected rack
@@ -901,14 +1068,22 @@ observe({
     # Sort by GPU ID and Time Period for better organization
     rack_data <- rack_data[order(rack_data[[names(rack_data)[1]]], rack_data[[names(rack_data)[3]]]), ]
     
-    # Return the full dataset for the selected rack
+    # Return the dataset with DT formatting
     return(rack_data)
   }, 
-  striped = TRUE,
-  hover = TRUE,
-  bordered = TRUE,
-  spacing = "xs",
-  width = "100%")
+  options = list(
+    pageLength = 10,
+    lengthMenu = c(5, 10, 25, 50, 100),
+    searching = TRUE,
+    ordering = TRUE,
+    scrollX = TRUE,
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+    columnDefs = list(
+      list(className = 'dt-center', targets = '_all')
+    )
+  )
+  )
   
   # Tab 2: Additional plot (histogram with custom settings)
   output$tab2Plot <- renderPlot({

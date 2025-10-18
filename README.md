@@ -11,15 +11,15 @@ Create an intuitive Shinyapp dashboard tool to help users find existing hardware
 
 ### Project Scope:
 
-We have been contracted to develop a tool that will analyze GPU data for datacenters. The tool will be used to inform datacenter maintenance staff and onsite operators of possible individual GPU failures and GPU racks under high stress or full failure. High stress is defined as a GPU overheating, high power draw, and high memory usage. Maintenance staff will be able to enter desired upper and lower specification limits for GPU temperature, power consumption, and memory usage. This workspace will take .CSV format data with the following naming convention: <_daynumber>, where daynumber is the day of the month the corresponding data is from with the convention resetting each month. Each variable used is listed and described in the following section. 
+We have been contracted to develop a tool that will analyze GPU data for datacenters. The tool will be used to inform datacenter maintenance staff and onsite operators of possible individual GPU failures and GPU racks under high stress or full failure. High stress is defined as a GPU overheating, high power draw, and high memory usage. Maintenance staff will be able to enter desired upper and lower specification limits for GPU temperature, power consumption, and memory usage. This workspace will take CSV format data with the following naming convention: <_daynumber>, where daynumber is the day of the month the corresponding data is from with the convention resetting each month. Each variable used is listed and described in the following section. 
 
 Our scope includes GPUs organized into racks in the specified datacenter from our client. The scope does not include datacenters using different types of GPUs in the same datacenter (however this feature could be implemented in the future). Also, the scope does not take into account the cost of some GPUs being higher than others and does not have a system to prioritize specified GPUs over others. 
 
 ### How to Install the Tool:
 
 - Have R and R Studio downloaded.
-- Clone the github repository or download the ZIP file from github and open it in RStudio.
-- Place your .csv files in the Dashboard.
+- Clone the GitHub repository or download the ZIP file from GitHub and open it in RStudio.
+- Place your CSV files in the Dashboard.
 - Input the following GPU specification limit information:
   - Max Temperature
   - Max Memory Utilization
@@ -27,7 +27,43 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 ### How to use:  
 
-GIF OF USER USING 
+Prerequisite: Follow the CSV generator instructions first if you do not have a CSV file ready to upload.
+
+Step 1: Open the Shiny App Tool
+- Launch the Shiny application in RStudio or from the console.
+- The interface will open automatically in your web browser.
+Example: [GIF1]
+
+
+Step 2: Upload Your CSV File
+- Use the file upload box on the Home or Upload page.
+- Select your desired CSV file.
+- The app will automatically load your dataset and open the How To Use page.
+Example:[GIF2]
+
+Step 3: Select a Focus Metric Tab
+- Choose one of the metric tabs located along the top navigation bar:
+  - General
+  - Rack
+  - Individual GPU
+
+Step 3A: General Tab
+- Provides an overview of all GPU performance metrics (Temperature, Power Usage, and Memory Usage).
+- The top-level statistical summaries can be filtered by hour to focus on specific time periods.
+- You can:
+  - Preview the uploaded dataset.
+  - Control how many data points are displayed.
+  - Choose how data points are grouped (by rack, GPU, or time).
+
+Step 3B: Rack Tab
+- Displays GPU performance on a per-rack basis.
+- Uses a performance index (Ppk) to determine which racks require attention.
+- Racks are color-coded according to Ppk values for a visual representation of which racks need maintenance.
+
+Step 3C: GPU Tab
+- Allows users to set specification limits (upper and lower) for key metrics.
+- Plots GPU failures over time to identify trends and timing.
+- Displays detailed data showing where, when, and how each GPU failure occurred.
 
 ### Codebook for CSV Data Inputs:
 
@@ -64,21 +100,21 @@ dataset_generator_with_dead_GPUs.R
 - Most GPUs are healthy.
 - A specified number of GPUs (default 3) are completely dead or shut down (no power draw or memory usage).
 - Another specified percentage (default 30%) of GPUs are close to failure but still operational.
--Simulates a datacenter containing:
-  -Healthy GPUs running safely,
-  -Dead GPUs that need replacement, and
-  -High-stress GPUs requiring maintenance intervention.
+- Simulates a datacenter containing:
+  - Healthy GPUs running safely,
+  - Dead GPUs that need replacement, and
+  - High-stress GPUs requiring maintenance intervention.
 
 #### How to Install: 
-- Download the .csv generator files from the github repository.
+- Download the CSV generator files from the GitHub repository.
 - Run in R or RStudio.
 
-#### How to use .csv Generator:
-- Open the .csv generator code that you just installed .
+#### How to use CSV Generator:
+- Open the CSV generator code that you just installed.
 - With in the generator code modify the sections labelled with comments. The following can be changed:
   - The number of racks, GPUs, and time period
   - (If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead.
-  - The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer.
+  - The filename of the outputted CSV file (recommended to change per run so as to not overwrite any CSV files accidentally) & the file directory for where you wish to store the CSV files in your computer.
 - Once you are happy with the specifications that you have chosen, run the code! 
 
 #### Dataset Notes:
