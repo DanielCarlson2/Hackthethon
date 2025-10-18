@@ -29,7 +29,7 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 Prerequisite: Follow the CSV generator instructions first if you do not have a CSV file ready to upload.
 
-Step 1: Open the Shiny App Tool
+Step 1: Open the Shiny App Tool located in the Github folder titled "AppDevelopment"
 - Launch the Shiny application in RStudio or from the console.
 - The interface will open automatically in your web browser.
 
@@ -41,7 +41,7 @@ Step 2: Upload Your CSV File
 
 Example:
 
-![Step 1 example GIF](InstructionGIFs/LoadCSV.gif)
+![Step 1 example GIF](InstructionGIFs/UploadCSV.gif)
 
 Step 3: Select a Focus Metric Tab
 - Choose one of the metric tabs located along the top navigation bar:
