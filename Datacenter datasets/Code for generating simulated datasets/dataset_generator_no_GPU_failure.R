@@ -22,12 +22,16 @@
 # - Average_GPU_Memory_Usage: average GPU memory utilization as % of memory
 # - Peak_GPU_Memory_Usage: maximum memory usage as % of total memory
 
+
+library(dplyr)
+library(readr)
+
 # Example dataset parameters:
 set.seed(123)  # use for reproducibility of the random data
 
 # CHANGE TO SPECIFY WHAT YOU WANT
 size <-  5        # GPUs per rack
-racks <- 10      # number of racks
+racks <- 5      # number of racks
 time_periods <- 24  # number of time periods
 
 # Total number of datapoints
@@ -71,5 +75,4 @@ to_export <- one %>%
   arrange(Time_Period, Rack_ID, GPU_Unique_ID)
 
 # Save to CSV
-# CHANGE THE FINAL CSV NAME TO AVOID OVERWRITTING FILES AND MATCH YOUR FILE DIRECTORY TO STORE THE CSV FILE
-write.csv(to_export, "/cloud/project/Datacenter_datasets/_2.csv", row.names = FALSE)
+write.csv(to_export, "./Datacenter datasets/dataset_2.csv", row.names = FALSE)

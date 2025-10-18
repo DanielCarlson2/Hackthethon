@@ -77,7 +77,11 @@ to_export <- one %>%
 
 
 # Save to CSV
+<<<<<<< HEAD
 write.csv(to_export, "/cloud/project/Datacenter_datasets/_3.csv", row.names = FALSE)
+=======
+write.csv(to_export, "./Datacenter datasets/dataset_3.csv", row.names = FALSE)
+>>>>>>> 93aeb920418b3f778304498073f21196890255f5
 
 # Print failing racks
 cat("Failing Rack IDs:", failing_rack_ids, "\n")
