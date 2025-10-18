@@ -4,12 +4,11 @@ library(shiny)
 library(bslib)
 library(dplyr)
 
-
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
     tags$style(HTML("
     .boxButton {
-      background-color: #3B82F6;
+      background-color: #20B2AA;
       color: white;
       padding: 20px;
       border-radius: 10px;
@@ -17,25 +16,31 @@ ui <- fluidPage(
       cursor: pointer;
       font-size: 18px;
       width: fit-content;
+      border: none;
+      transition: all 0.3s ease;
     }
     .boxButton:hover {
-      background-color: #2563EB;
+      background-color: #2E8B57;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(32, 178, 170, 0.3);
     }
   ")),
-  # Custom theme with orange and purple colors ----
+  # Custom mint-themed design ----
   theme = bs_theme(
     version = 5,
-    primary = "#FF6B35",      # Orange primary color
-    secondary = "#8B5CF6",    # Purple secondary color
-    success = "#10B981",      # Green for success states
-    info = "#3B82F6",         # Blue for info
-    warning = "#F59E0B",      # Amber for warnings
-    danger = "#EF4444",        # Red for danger
-    light = "#F8FAFC",        # Light background
-    dark = "#1E293B",          # Dark text
-    bg = "#FFFFFF",            # Main background
-    fg = "#1E293B",            # Main text color
-    "font-family-base" = "'Inter', 'Segoe UI', sans-serif"
+    primary = "#20B2AA",      # Light Sea Green (mint primary)
+    secondary = "#98FB98",    # Pale Green (mint secondary)
+    success = "#00CED1",      # Dark Turquoise for success states
+    info = "#40E0D0",         # Turquoise for info
+    warning = "#FFD700",      # Gold for warnings
+    danger = "#FF6347",       # Tomato for danger
+    light = "#F0FFF0",        # Honeydew light background
+    dark = "#2F4F4F",         # Dark Slate Gray text
+    bg = "#FFFFFF",           # Main background
+    fg = "#2F4F4F",           # Main text color
+    "font-family-base" = "'Inter', 'Segoe UI', sans-serif",
+    "border-radius" = "0.5rem",
+    "box-shadow" = "0 0.125rem 0.25rem rgba(32, 178, 170, 0.075)"
   ),
 
   # App title ----
@@ -129,7 +134,7 @@ ui <- fluidPage(
           numericInput(
             inputId = "bins",
             label = "Number of Bins:",
-            value = 100,
+            value = 30,
             min = 5,
             max = 1000
           ),
@@ -137,8 +142,8 @@ ui <- fluidPage(
           selectInput(
             inputId = "histColor",
             label = "Histogram Color:",
-            choices = c("Orange" = "#FF6B35", "Purple" = "#8B5CF6", "Blue" = "#3B82F6", "Green" = "#10B981"),
-            selected = "#FF6B35"
+            choices = c("Mint Green" = "#20B2AA", "Pale Green" = "#98FB98", "Turquoise" = "#40E0D0", "Sea Green" = "#2E8B57"),
+            selected = "#20B2AA"
           )
         ),
         card(
@@ -197,15 +202,16 @@ ui <- fluidPage(
             selected = "temperature"
           )
         ),
-        card(
-          card_header("By Rack Buttons"),
-          uiOutput("rackButtons"),
-        ),
-        card(
-          card_header("By Rack Plot"),
-          plotOutput(outputId = "rackPlot")
-        )
+      card(
+        card_header("By Rack Analysis"),
+        # 👉 Add dynamic rack buttons here
+        uiOutput("rackButtons"),
       ),
+      card(
+        card_header("By Rack Plot"),
+        plotOutput(outputId = "rackPlot")
+      )
+    )
     ),
 
     # Tab 3: By GPU - Failure Detection
@@ -751,7 +757,7 @@ observe({
     plot(time_periods, temp_failures,
          type = "b",  # Both points and lines
          pch = 19,    # Solid circles
-         col = "#FF6B35",  # Orange color for temperature
+         col = "#FF6347",  # Tomato color for temperature (warm)
          lwd = 2,     # Line width
          xlab = "Time Period",
          ylab = "Number of Failures",
@@ -764,29 +770,29 @@ observe({
     lines(time_periods, power_failures,
           type = "b",
           pch = 17,    # Triangle
-          col = "#3B82F6",  # Blue color for power
+          col = "#20B2AA",  # Light Sea Green for power
           lwd = 2)
     
     # Add memory failures line
     lines(time_periods, memory_failures,
           type = "b",
           pch = 15,    # Square
-          col = "#10B981",  # Green color for memory
+          col = "#40E0D0",  # Turquoise for memory
           lwd = 2)
     
     # Add horizontal lines for means
     abline(h = mean_temp, 
-           col = "#FF6B35",  # Orange
+           col = "#FF6347",  # Tomato
            lwd = 1, 
            lty = 2)  # Dashed line
     
     abline(h = mean_power, 
-           col = "#3B82F6",  # Blue
+           col = "#20B2AA",  # Light Sea Green
            lwd = 1, 
            lty = 2)  # Dashed line
     
     abline(h = mean_memory, 
-           col = "#10B981",  # Green
+           col = "#40E0D0",  # Turquoise
            lwd = 1, 
            lty = 2)  # Dashed line
     
@@ -798,8 +804,8 @@ observe({
                      paste("Temp Mean:", round(mean_temp, 2)),
                      paste("Power Mean:", round(mean_power, 2)),
                      paste("Memory Mean:", round(mean_memory, 2))),
-           col = c("#FF6B35", "#3B82F6", "#10B981", 
-                  "#FF6B35", "#3B82F6", "#10B981"),
+           col = c("#FF6347", "#20B2AA", "#40E0D0", 
+                  "#FF6347", "#20B2AA", "#40E0D0"),
            lty = c(1, 1, 1, 2, 2, 2),
            lwd = c(2, 2, 2, 1, 1, 1),
            pch = c(19, 17, 15, NA, NA, NA),
