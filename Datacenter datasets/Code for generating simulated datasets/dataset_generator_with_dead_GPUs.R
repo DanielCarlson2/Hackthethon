@@ -81,7 +81,7 @@ to_export <- one %>%
   select(-Is_Failing, everything(), Is_Failing)  # Move Is_Failing to end
 
 # Save to CSV
-write.csv(to_export, "/cloud/project/Datacenter_datasets/_4.csv", row.names = FALSE)
+write.csv(to_export, "./Datacenter datasets/dataset_4.csv", row.names = FALSE)
 
 # Print diagnostics
 cat("Failing Rack IDs:", failing_rack_ids, "\n")
