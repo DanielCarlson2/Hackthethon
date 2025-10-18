@@ -63,18 +63,17 @@ The third generator is dataset_generator_with_dead_GPUs.R where a majority of GP
 
 #### How to use .csv Generator:
 - Open the .csv generator code that you just installed 
-- With in the generator code modify the sections labelled with comments
--The following can be changed:
+- With in the generator code modify the sections labelled with comments. The following can be changed:
   - The number of racks, GPUs, and time period
   - (If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead
   - The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer
   - Once you are happy with the specifications that you have chosen, run the code! 
 
 #### Our Dataset Notes
-For our generated simulated datasets we used the following inputs
-Number of Racks: 10
-GPUs per Rack: 5
-Time Periods: 24 (24 hour day, so data is collected per hour)
-Total Data Points: 1200
-Temperature Range: 30 ℃ to 90 ℃
+For our generated simulated datasets we used the following inputs:
+ - Number of Racks: 10
+ - GPUs per Rack: 5
+ - Time Periods: 24 (24 hour day, so data is collected per hour)
+ - Total Data Points: 1200
+ - Temperature Range: 30 ℃ to 90 ℃
 </details>
