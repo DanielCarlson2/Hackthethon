@@ -4,7 +4,6 @@ library(shiny)
 library(bslib)
 library(dplyr)
 
-source("/cloud/project/User tool/User_tool_math.R")
 
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
