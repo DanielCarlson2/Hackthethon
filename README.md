@@ -18,7 +18,7 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 ### How to Install the Tool:
 
 - Have R and R Studio downloaded.
-- Clone the github repository or download the ZIP file from github and open it in RStudio.
+- Clone the GitHub repository or download the ZIP file from GitHub and open it in RStudio.
 - Place your .csv files in the Dashboard.
 - Input the following GPU specification limit information:
   - Max Temperature
@@ -27,7 +27,43 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 ### How to use:  
 
-GIF OF USER USING 
+Prerequisite: Follow the CSV generator instructions first if you do not have a csv file ready to upload.
+
+Step 1: Open the Shiny App Tool
+- Launch the Shiny application in RStudio or from the console.
+- The interface will open automatically in your web browser.
+Example: [GIF1]
+
+
+Step 2: Upload Your CSV File
+- Use the file upload box on the Home or Upload page.
+- Select your desired .csv file.
+- The app will automatically load your dataset and open the How To Use page.
+Example:[GIF2]
+
+Step 3: Select a Focus Metric Tab
+- Choose one of the metric tabs located along the top navigation bar:
+  - General
+  - Rack
+  - Individual GPU
+
+Step 3A: General Tab
+- Provides an overview of all GPU performance metrics (Temperature, Power Usage, and Memory Usage).
+- The top-level statistical summaries can be filtered by hour to focus on specific time periods.
+- You can:
+  - Preview the uploaded dataset.
+  - Control how many data points are displayed.
+  - Choose how data points are grouped (by rack, GPU, or time).
+
+Step 3B: Rack Tab
+- Displays GPU performance on a per-rack basis.
+- Uses a performance index (Ppk) to determine which racks require attention.
+- Racks are color-coded according to Ppk values for a visual representation of which racks need maintenance.
+
+Step 3C: GPU Tab
+- Allows users to set specification limits (upper and lower) for key metrics.
+- Plots GPU failures over time to identify trends and timing.
+- Displays detailed data showing where, when, and how each GPU failure occurred.
 
 ### Codebook for CSV Data Inputs:
 
@@ -70,7 +106,7 @@ dataset_generator_with_dead_GPUs.R
   -High-stress GPUs requiring maintenance intervention.
 
 #### How to Install: 
-- Download the .csv generator files from the github repository.
+- Download the .csv generator files from the GitHub repository.
 - Run in R or RStudio.
 
 #### How to use .csv Generator:
