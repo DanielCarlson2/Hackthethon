@@ -1,11 +1,7 @@
-# Simulated GPU dataset with GPUs purposefully reaching the max failure limits for temperature, power usage, or memory usage to test app performance
+# Simulated GPU dataset with purposely "dead" GPUs to test app performance
 # group members: Nevin Motto, Evelyne Morisseau, Daniel Carlson, Rene Umeh, Charlie Gagliardo
-# What makes this data generator different is that we wanted to be able to simulate a datacenter where some racks are failing and others are doing fine. 
-# To simulate this in a dataset, we first generate a csv of data where all the GPUs are operating at relatively normal metrics
-# we then the randomly select 30% of GPUs to have metrics that are close to failing criteria. These will be then manually overwritten. The result is some specific GPUs and thus Racks that are running close to failure while others are normal
 
-
-# this script simulates GPU performance data across three metrics: Temperature, Power usage, and memory usage
+# this script simulates GPU performance data across three metrics: 
 # Each datapoint is a row for a given GPU averaged over a given time period
 # The columns are the following:
 # - GPU Unique ID
@@ -17,19 +13,18 @@
 # - Peak GPU Power Usage in Watts
 # - GPU Memory Usage in percentage of total memory
 # - Peak GPU Memory Usage in percentage of total memory
-# - Is Failing (this column is only used to help generate randomly GPUs that are failing, that way not all racks are failing and only some will fail like a real datacenter), in the real user provided CSV datasets this column would not exist
 
 # load required libraries 
 library(dplyr)
 
-set.seed(123)  # reproducibility
+set.seed(123)  # Reproducibility
 
 # CHANGE TO SPECIFY WHAT YOU WANT
-size <-  5        # GPUs per rack
-racks <- 10       # number of racks
-time_periods <- 24  # number of time periods (each digit is one hour of a 24 hour day)
+size <- 5         # GPUs per rack
+racks <- 5       # Number of racks
+time_periods <- 12  # Number of time periods, 24 so there is 1 data pull per hour
 
-# total datapoints
+# Total datapoints
 n <- size * racks * time_periods
 
 # Randomly select 30% of racks to be "failing"
@@ -56,10 +51,11 @@ generate_values <- function(fail, normal_mean, normal_sd, fail_mean, fail_sd, mi
     rnorm(length(fail), mean = fail_mean, sd = fail_sd),
     rnorm(length(fail), mean = normal_mean, sd = normal_sd)
   )
+  # Rounds values ensuring integer does not exceed min and max bounds
   return(pmin(pmax(round(vals, 1), min_val), max_val))
 }
 
-# Add metric columns that indicate GPU is failing, and add them to the CSV dataset that were set as failing
+# Generate metrics 
 one <- one %>%
   mutate(
     Average_GPU_Temperature = generate_values(Is_Failing, 75, 6, 85, 5, 30, 100),
@@ -70,21 +66,26 @@ one <- one %>%
     Peak_GPU_Memory_Usage = generate_values(Is_Failing, 90, 6, 98, 3, 0, 100)
   )
 
-# Optional: sort data for readability
+# Hardcoding a few "dead" GPUs: both power and memory usage = 0
+# Choose a few unique GPU IDs (ex 3 GPUs) to simulate dead GPUs
+# YOU SPECIFY THE NUMBER OF GPUS YOU'D LIKE TO BE DEAD (CHANGE SIZE)
+dead_gpu_ids <- sample(unique(one$GPU_Unique_ID), size = 3)
+
+# ifelse statements to set GPU Power or Memory as 0 if GPU is dead
+one <- one %>%
+  mutate(
+    Peak_GPU_Power_Usage = ifelse(GPU_Unique_ID %in% dead_gpu_ids, 0, Peak_GPU_Power_Usage),
+    Peak_GPU_Memory_Usage = ifelse(GPU_Unique_ID %in% dead_gpu_ids, 0, Peak_GPU_Memory_Usage)
+  )
+
+# Sort data for readability
 to_export <- one %>%
   arrange(Time_Period, Rack_ID, GPU_Unique_ID) %>%
-  select(-Is_Failing, everything(), Is_Failing)  # Move Is_Failing to end for UI development so it does not interfere with real metrics to be displayed to user
-
+  select(-Is_Failing, everything(), Is_Failing)  # Move Is_Failing to end
 
 # Save to CSV
-<<<<<<< HEAD
-write.csv(to_export, "/cloud/project/Datacenter_datasets/_3.csv", row.names = FALSE)
-=======
-write.csv(to_export, "./Datacenter datasets/dataset_3.csv", row.names = FALSE)
->>>>>>> 93aeb920418b3f778304498073f21196890255f5
+write.csv(to_export, "./datacenterDatasets/dataset_4.csv", row.names = FALSE)
 
-# Print failing racks
+# Print diagnostics
 cat("Failing Rack IDs:", failing_rack_ids, "\n")
-# Move 'Is_Failing' column to the end
-to_export <- to_export %>%
-  select(-Is_Failing, everything(), Is_Failing)
+cat("Dead GPU IDs (power & memory = 0):", dead_gpu_ids, "\n")

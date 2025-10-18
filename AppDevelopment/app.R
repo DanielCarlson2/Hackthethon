@@ -4,6 +4,8 @@ library(shiny)
 library(bslib)
 library(dplyr)
 
+source("/cloud/project/User tool/User_tool_math.R")
+
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
     tags$style(HTML("
@@ -726,7 +728,17 @@ observe({
       spec_lower <- NA
     }
     
-    # Create the plot with error handling
+    # Calculate y-axis limits to ensure control limits are visible
+    data_range <- range(metric_data, na.rm = TRUE)
+    control_range <- range(c(upper_control, lower_control), na.rm = TRUE)
+    spec_range <- range(c(spec_upper, spec_lower), na.rm = TRUE)
+    
+    # Combine all ranges and add padding
+    all_values <- c(data_range, control_range, spec_range)
+    y_min <- min(all_values, na.rm = TRUE) * 0.9  # 10% padding below
+    y_max <- max(all_values, na.rm = TRUE) * 1.1  # 10% padding above
+    
+    # Create the plot with error handling and proper y-axis scaling
     tryCatch({
       plot(time_periods, metric_data,
            type = "b",
@@ -737,7 +749,8 @@ observe({
            ylab = paste("Average", tools::toTitleCase(input$rackMetric)),
            main = paste("Rack", selectedRack(), "-", tools::toTitleCase(input$rackMetric), "Control Chart"),
            cex.lab = 1.2,
-           cex.main = 1.3)
+           cex.main = 1.3,
+           ylim = c(y_min, y_max))  # Set y-axis limits
     }, error = function(e) {
       plot.new()
       text(0.5, 0.5, paste("Error creating plot:", e$message), 
