@@ -459,8 +459,7 @@ server <- function(input, output) {
       " Std Dev:", round(sd(col_data_clean), 2), "\n",
       " Median:", round(median(col_data_clean), 2), "\n",
       " Min:", round(min(col_data_clean), 2), "\n",
-      " Max:", round(max(col_data_clean), 2), "\n",
-      " Count:", length(col_data_clean)
+      " Max:", round(max(col_data_clean), 2), "\n"
     )
     
     return(stats_text)
