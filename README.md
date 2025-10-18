@@ -46,7 +46,7 @@ Step 3: Select a Focus Metric Tab
   - Rack
   - Individual GPU
 
-Step 3a: General Tab
+Step 3A: General Tab
 - Provides an overview of all GPU performance metrics (Temperature, Power Usage, and Memory Usage).
 - The top-level statistical summaries can be filtered by hour to focus on specific time periods.
 - You can:
@@ -54,12 +54,12 @@ Step 3a: General Tab
   - Control how many data points are displayed.
   - Choose how data points are grouped (by rack, GPU, or time).
 
-Step 3b: Rack Tab
+Step 3B: Rack Tab
 - Displays GPU performance on a per-rack basis.
 - Uses a performance index (Ppk) to determine which racks require attention.
 - Racks are color-coded according to Ppk values for a visual representation of which racks need maintenance.
 
-Step 3c: GPU Tab
+Step 3C: GPU Tab
 - Allows users to set specification limits (upper and lower) for key metrics.
 - Plots GPU failures over time to identify trends and timing.
 - Displays detailed data showing where, when, and how each GPU failure occurred.
