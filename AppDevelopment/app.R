@@ -734,7 +734,7 @@ observe({
     req(data(), selectedRack(), input$rackMetric)
     
     # Filter data for selected rack
-    rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
+    rack_data <- data()[data()$Rack_ID == selectedRack(), ]
     
     # Filter by time period if not "all"
     if (input$rackTimePeriod != "all") {
@@ -823,7 +823,7 @@ observe({
     req(data(), selectedRack())
     
     # Filter data for selected rack
-    rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
+    rack_data <- data()[data()$Rack_ID == selectedRack(), ]
     
     # Filter by time period if not "all"
     if (input$rackTimePeriod != "all") {
