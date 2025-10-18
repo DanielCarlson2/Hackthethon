@@ -1366,8 +1366,7 @@ observe({
           p(strong("Time Period:"), failure$Time_Period),
           p(strong("Failure Type:"), failure$Failure_Type),
           p(strong("Value:"), round(failure$Value, 2)),
-          p(strong("Threshold:"), round(failure$Threshold, 2)),
-          p(strong("Row Number:"), failure$Row_Number)
+          p(strong("Threshold:"), round(failure$Threshold, 2))
         )
       })
       
