@@ -57,7 +57,7 @@ dataset_generator_no_GPU_failure.R
 
 dataset_generator_with_errors.R
 - Most GPUs operate at normal levels.
-- A specified percentage of GPUs (default 30%) run near failure thresholds — overheating, high power draw, or high memory utilization.
+- A specified percentage of GPUs (default 30%) run near failure thresholds of overheating, high power draw, or high memory utilization.
 - Simulates a datacenter with some GPUs under high stress requiring immediate maintenance or monitoring.
 
 dataset_generator_with_dead_GPUs.R
