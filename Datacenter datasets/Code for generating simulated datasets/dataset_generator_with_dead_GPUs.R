@@ -68,6 +68,7 @@ one <- one %>%
 
 # Hardcoding a few "dead" GPUs: both power and memory usage = 0
 # Choose a few unique GPU IDs (ex 3 GPUs) to simulate dead GPUs
+# YOU SPECIFY THE NUMBER OF GPUS YOU'D LIKE TO BE DEAD (CHANGE SIZE)
 dead_gpu_ids <- sample(unique(one$GPU_Unique_ID), size = 3)
 
 # ifelse statements to set GPU Power or Memory as 0 if GPU is dead
