@@ -28,7 +28,7 @@ ui <- fluidPage(
     id = "mainTabs",
     # Tab 1: Data Analysis
     tabPanel(
-      "Tab 1",
+      "General",
       page_sidebar(
         title = "Data Analysis",
         sidebar = sidebar(
@@ -71,7 +71,7 @@ ui <- fluidPage(
     ),
     # Tab 2: Additional Analysis
     tabPanel(
-      "Tab 2",
+      "By Rack",
       page_sidebar(
         title = "Distribution Analysis",
         sidebar = sidebar(
@@ -107,7 +107,7 @@ ui <- fluidPage(
     ),
     # Tab 3: Summary/Reports
     tabPanel(
-      "Tab 3",
+      "By GPU",
       page_sidebar(
         title = "Summary Statistics",
         sidebar = sidebar(
