@@ -5,7 +5,7 @@ Project Prompt 1: Industrial Engineering
 
 Data centers are key infrastructure in the AI economy, providing servers equipped with high numbers of GPUs needed for high speed model training and serving. Given the recent surge in GPU demand, data centers are struggling to keep up, and hardware failures need to be addressed swiftly. Develop a quality control system to track quality and/or failure in GPU usage across data centers for a system like Google Cloud or Amazon Web Services.
 
-### Project goal:
+### Project Goal:
 
 Create an intuitive Shinyapp dashboard tool to help users find existing hardware failures in GPU racks and individual GPUs based on trends in GPU temperature, powerdraw, and memory utilization collected on an hourly basis.
 
@@ -32,14 +32,14 @@ Prerequisite: Follow the CSV generator instructions first if you do not have a C
 Step 1: Open the Shiny App Tool
 - Launch the Shiny application in RStudio or from the console.
 - The interface will open automatically in your web browser.
-Example: [GIF1]
 
 
 Step 2: Upload Your CSV File
 - Use the file upload box on the Home or Upload page.
 - Select your desired CSV file.
 - The app will automatically load your dataset and open the How To Use page.
-Example:[GIF2]
+
+Example: ![Step 1 example GIF](InstructionGIFs/UploadingCSV.gif)
 
 Step 3: Select a Focus Metric Tab
 - Choose one of the metric tabs located along the top navigation bar:
@@ -55,6 +55,8 @@ Step 3A: General Tab
   - Control how many data points are displayed.
   - Choose how data points are grouped (by rack, GPU, or time).
 
+Example: ![Step 3a example GIF](InstructionGIFs/GeneralTab.gif)
+
 Step 3B: Rack Tab
 - Displays GPU performance on a per-rack basis.
 - Uses a performance index (Ppk) to determine which racks require attention.
@@ -64,6 +66,8 @@ Step 3C: GPU Tab
 - Allows users to set specification limits (upper and lower) for key metrics.
 - Plots GPU failures over time to identify trends and timing.
 - Displays detailed data showing where, when, and how each GPU failure occurred.
+
+Example: ![Step 3c example GIF](InstructionGIFs/ByGPUTab.gif)
 
 ### Codebook for CSV Data Inputs:
 
