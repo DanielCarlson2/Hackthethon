@@ -162,12 +162,50 @@ ui <- fluidPage(
     # Tab 2: By Rack
     tabPanel(
       "By Rack",
-      card(
-        card_header("By Rack Analysis"),
-        # 👉 Add dynamic rack buttons here
-        uiOutput("rackButtons"),
-        plotOutput(outputId = "rackPlot")
-      )
+      page_sidebar(
+        title = "By Rack Filtering",
+        sidebar = sidebar(
+          numericInput(
+            inputId = "rackTempMax",
+            label = "Max Temperature (°C):",
+            value = 90,
+            min = 0,
+            max = 200
+          ),
+          numericInput(
+            inputId = "rackMemMax",
+            label = "Max Memory Utilization (%):",
+            value = 100,
+            min = 0,
+            max = 100
+          ),
+          numericInput(
+            inputId = "rackMemMin",
+            label = "Min Memory Utilization (%):",
+            value = 0,
+            min = 0,
+            max = 100
+          ),
+          selectInput(
+            inputId = "rackMetric",
+            label = "Metric to Display:",
+            choices = c(
+              "Temperature" = "temperature",
+              "Memory Utilization" = "memory",
+              "Power Usage" = "power"
+            ),
+            selected = "temperature"
+          )
+        ),
+        card(
+          card_header("By Rack Buttons"),
+          uiOutput("rackButtons"),
+        ),
+        card(
+          card_header("By Rack Plot"),
+          plotOutput(outputId = "rackPlot")
+        )
+      ),
     ),
 
     # Tab 3: By GPU - Failure Detection
