@@ -76,9 +76,9 @@ ui <- fluidPage(
         p("• Make sure your CSV file contains numeric columns for analysis"),
         p("• The app will automatically detect and display your data"),
         
-        h4("Step 2: Set Temperature Thresholds"),
-        p("• Enter your maximum temperature threshold (default: 80°C)"),
-        p("• Enter your desired temperature threshold (default: 70°C)"),
+        h4("Step 2: General"),
+        p("• Enter your maximum temperature threshold"),
+        p("• Enter your desired temperature threshold"),
         p("• These values help monitor GPU health and performance"),
         
         h4("Step 3: Analyze Your Data"),
@@ -593,7 +593,7 @@ observe({
     # Filter by time period if not "all"
     if (input$rackTimePeriod != "all") {
       time_col <- names(rack_data)[3]  # Time_Period column
-      rack_data <- rack_data[rack_data[[time_col]] == as.numeric(input$rackTimePeriod), ]
+      rack_data <- rack_data[rack_data[[ime_ctol]] == as.numeric(input$rackTimePeriod), ]
     }
     
     if (nrow(rack_data) == 0) {
