@@ -171,6 +171,18 @@ ui <- fluidPage(
       page_sidebar(
         title = "By Rack Filtering",
         sidebar = sidebar(
+          # Input: Time period selector for rack analysis ----
+          selectInput(
+            inputId = "rackTimePeriod",
+            label = "Select Time Period:",
+            choices = c("All Hours (Global)" = "all", "Hour 1" = "1", "Hour 2" = "2", "Hour 3" = "3", 
+                       "Hour 4" = "4", "Hour 5" = "5", "Hour 6" = "6", "Hour 7" = "7", "Hour 8" = "8",
+                       "Hour 9" = "9", "Hour 10" = "10", "Hour 11" = "11", "Hour 12" = "12",
+                       "Hour 13" = "13", "Hour 14" = "14", "Hour 15" = "15", "Hour 16" = "16",
+                       "Hour 17" = "17", "Hour 18" = "18", "Hour 19" = "19", "Hour 20" = "20",
+                       "Hour 21" = "21", "Hour 22" = "22", "Hour 23" = "23", "Hour 24" = "24"),
+            selected = "all"
+          ),
           numericInput(
             inputId = "rackTempMax",
             label = "Max Temperature (°C):",
@@ -208,11 +220,21 @@ ui <- fluidPage(
         # 👉 Add dynamic rack buttons here
         uiOutput("rackButtons"),
       ),
-      card(
-        card_header("By Rack Plot"),
-        plotOutput(outputId = "rackPlot")
-      )
-    )
+       card(
+         card_header("By Rack Plot"),
+         plotOutput(outputId = "rackPlot")
+       ),
+       card(
+         card_header("Rack Statistics"),
+         p("Statistical summary for the selected rack and time period:"),
+         verbatimTextOutput("rackStats")
+       ),
+       card(
+         card_header("GPU Data for Selected Rack"),
+         p("Detailed data for all GPUs in the selected rack:"),
+         tableOutput("rackGPUTable")
+       )
+     )
     ),
 
     # Tab 3: By GPU - Failure Detection
@@ -568,6 +590,12 @@ observe({
     # Filter data for selected rack
     rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
     
+    # Filter by time period if not "all"
+    if (input$rackTimePeriod != "all") {
+      time_col <- names(rack_data)[3]  # Time_Period column
+      rack_data <- rack_data[rack_data[[time_col]] == as.numeric(input$rackTimePeriod), ]
+    }
+    
     if (nrow(rack_data) == 0) {
       plot.new()
       text(0.5, 0.5, "No data found for selected rack", 
@@ -615,8 +643,8 @@ observe({
       spec_lower <- NA
     }
     
-    # Create the plot
-    time_points <- 1:length(metric_data)
+     # Create the plot
+     time_points <- seq_along(metric_data)
     plot(time_points, metric_data,
          type = "b",
          pch = 19,
@@ -659,9 +687,127 @@ observe({
            lwd = 2,
            cex = 0.9)
     
-    # Add grid
-    grid()
+     # Add grid
+     grid()
+   })
+  
+  # Rack Statistics
+  output$rackStats <- renderText({
+    req(data(), selectedRack(), input$rackMetric)
+    
+    # Filter data for selected rack
+    rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
+    
+    # Filter by time period if not "all"
+    if (input$rackTimePeriod != "all") {
+      time_col <- names(rack_data)[3]  # Time_Period column
+      rack_data <- rack_data[rack_data[[time_col]] == as.numeric(input$rackTimePeriod), ]
+    }
+    
+    if (nrow(rack_data) == 0) {
+      return("No data found for selected rack and time period.")
+    }
+    
+    # Get column names
+    col_names <- names(rack_data)
+    time_col <- col_names[3]  # Time_Period
+    
+    # Determine metric column based on selection
+    metric_col <- switch(input$rackMetric,
+      "temperature" = col_names[4],  # Average_GPU_Temperature
+      "memory" = col_names[8],       # Average_GPU_Memory_Usage
+      "power" = col_names[6]         # Average_GPU_Power_Usage
+    )
+    
+    # Get metric data
+    metric_data <- rack_data[[metric_col]]
+    metric_data <- as.numeric(metric_data[!is.na(metric_data)])
+    
+    if (length(metric_data) == 0) {
+      return("No valid data for selected metric.")
+    }
+    
+    # Create header based on selections
+    if (input$rackTimePeriod == "all") {
+      header_text <- paste("Rack", selectedRack(), "-", tools::toTitleCase(input$rackMetric), "Statistics (All Hours):\n\n")
+    } else {
+      header_text <- paste("Rack", selectedRack(), "-", tools::toTitleCase(input$rackMetric), "Statistics (Hour", input$rackTimePeriod, "):\n\n")
+    }
+    
+    # Calculate statistics
+    mean_val <- mean(metric_data)
+    std_val <- sd(metric_data)
+    median_val <- median(metric_data)
+    min_val <- min(metric_data)
+    max_val <- max(metric_data)
+    count_val <- length(metric_data)
+    
+    # Calculate control limits
+    upper_control <- mean_val + 3 * std_val
+    lower_control <- mean_val - 3 * std_val
+    
+    # Create statistics text
+    stats_text <- paste(
+      header_text,
+      "Basic Statistics:\n",
+      "  Count:", count_val, "\n",
+      "  Mean:", round(mean_val, 2), "\n",
+      "  Standard Deviation:", round(std_val, 2), "\n",
+      "  Median:", round(median_val, 2), "\n",
+      "  Minimum:", round(min_val, 2), "\n",
+      "  Maximum:", round(max_val, 2), "\n\n",
+      "Control Limits:\n",
+      "  Upper Control Limit (UCL):", round(upper_control, 2), "\n",
+      "  Lower Control Limit (LCL):", round(lower_control, 2), "\n",
+      "  Center Line:", round(mean_val, 2), "\n\n"
+    )
+    
+    # Add specification limits if available
+    if (input$rackMetric == "temperature") {
+      spec_upper <- input$rackTempMax
+      stats_text <- paste(stats_text,
+        "Specification Limits:\n",
+        "  Upper Spec Limit:", spec_upper, "°C\n\n")
+    } else if (input$rackMetric == "memory") {
+      spec_upper <- input$rackMemMax
+      spec_lower <- input$rackMemMin
+      stats_text <- paste(stats_text,
+        "Specification Limits:\n",
+        "  Upper Spec Limit:", spec_upper, "%\n",
+        "  Lower Spec Limit:", spec_lower, "%\n\n")
+    }
+    
+    return(stats_text)
   })
+  
+  # Rack GPU Data Table
+  output$rackGPUTable <- renderTable({
+    req(data(), selectedRack())
+    
+    # Filter data for selected rack
+    rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
+    
+    # Filter by time period if not "all"
+    if (input$rackTimePeriod != "all") {
+      time_col <- names(rack_data)[3]  # Time_Period column
+      rack_data <- rack_data[rack_data[[time_col]] == as.numeric(input$rackTimePeriod), ]
+    }
+    
+    if (nrow(rack_data) == 0) {
+      return(data.frame(Message = "No data found for selected rack and time period"))
+    }
+    
+    # Sort by GPU ID and Time Period for better organization
+    rack_data <- rack_data[order(rack_data[[names(rack_data)[1]]], rack_data[[names(rack_data)[3]]]), ]
+    
+    # Return the full dataset for the selected rack
+    return(rack_data)
+  }, 
+  striped = TRUE,
+  hover = TRUE,
+  bordered = TRUE,
+  spacing = "xs",
+  width = "100%")
   
   # Tab 2: Additional plot (histogram with custom settings)
   output$tab2Plot <- renderPlot({
