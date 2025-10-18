@@ -17,13 +17,13 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 ### How to Install the Tool
 
-Have R and R Studio downloaded
-Clone the github repository or download the ZIP file from github and open it in RStudio
-Place your .csv files in the Dashboard
-Input the following GPU specification limit information:
-Max Temperature
-Max Memory Utilization
-Max Power Usage
+1.) Have R and R Studio downloaded
+2.) Clone the github repository or download the ZIP file from github and open it in RStudio
+3.) Place your .csv files in the Dashboard
+4.) Input the following GPU specification limit information:
+    a.) Max Temperature
+    b.) Max Memory Utilization
+    c.) Max Power Usage
 
 ### How to use 
 
