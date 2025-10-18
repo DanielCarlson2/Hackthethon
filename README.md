@@ -5,11 +5,11 @@ Project Prompt 1: Industrial Engineering
 
 Data centers are key infrastructure in the AI economy, providing servers equipped with high numbers of GPUs needed for high speed model training and serving. Given the recent surge in GPU demand, data centers are struggling to keep up, and hardware failures need to be addressed swiftly. Develop a quality control system to track quality and/or failure in GPU usage across data centers for a system like Google Cloud or Amazon Web Services.
 
-### Project goal
+### Project goal:
 
 Create an intuitive Shinyapp dashboard tool to help users find existing hardware failures in GPU racks and individual GPUs based on trends in GPU temperature, powerdraw, and memory utilization collected on an hourly basis.
 
-### Project Scope 
+### Project Scope:
 
 We have been contracted to develop a tool that will analyze GPU data for datacenters. The tool will be used to inform datacenter maintenance staff and onsite operators of possible individual GPU failures and GPU racks under high stress or full failure. High stress is defined as a GPU overheating, high power draw, and high memory usage. Maintenance staff will be able to enter desired upper and lower specification limits for GPU temperature, power consumption, and memory usage. This workspace will take .CSV format data with the following naming convention: <_daynumber>, where daynumber is the day of the month the corresponding data is from with the convention resetting each month. Each variable used is listed and described in the following section. 
 
@@ -29,7 +29,7 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 GIF OF USER USING 
 
-### Codebook for CSV Data Inputs
+### Codebook for CSV Data Inputs:
 
 | Variable                    | Type     | Description                                               | Unit        |
 |-----------------------------|----------|-----------------------------------------------------------|-------------|
@@ -44,11 +44,11 @@ GIF OF USER USING
 | Peak_GPU_Memory_Usage      | Numeric  | Highest memory usage of a GPU over the time period        | Percentage  |
 
 
-### Read Me for CSV Dataset Generators 
+### Read Me for CSV Dataset Generators
 <details> 
 <summary>Expand</summary>
   
-#### General Overview/Purpose
+#### General Overview/Purpose:
 There are three CSV Dataset Generators, each designed to simulate different GPU failure scenarios in a datacenter environment:
 
 dataset_generator_no_GPU_failure.R
@@ -81,7 +81,7 @@ dataset_generator_with_dead_GPUs.R
   - The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer.
 - Once you are happy with the specifications that you have chosen, run the code! 
 
-#### Dataset Notes
+#### Dataset Notes:
 For our generated simulated datasets we used the following inputs:
  - Number of Racks: 10
  - GPUs per Rack: 5
