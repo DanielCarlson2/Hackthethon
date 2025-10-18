@@ -5,6 +5,22 @@ library(bslib)
 
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
+  # Custom theme with orange and purple colors ----
+  theme = bs_theme(
+    version = 5,
+    primary = "#FF6B35",      # Orange primary color
+    secondary = "#8B5CF6",    # Purple secondary color
+    success = "#10B981",      # Green for success states
+    info = "#3B82F6",         # Blue for info
+    warning = "#F59E0B",      # Amber for warnings
+    danger = "#EF4444",        # Red for danger
+    light = "#F8FAFC",        # Light background
+    dark = "#1E293B",          # Dark text
+    bg = "#FFFFFF",            # Main background
+    fg = "#1E293B",            # Main text color
+    "font-family-base" = "'Inter', 'Segoe UI', sans-serif"
+  ),
+  
   # App title ----
   titlePanel("Data Center GPU Health Dashboard"),
   
@@ -26,47 +42,12 @@ ui <- fluidPage(
   # Main content area with tabs ----
   tabsetPanel(
     id = "mainTabs",
-    # Tab 1: Data Analysis
+    # Tab 1: General Analysis
     tabPanel(
       "General",
-      page_sidebar(
-        title = "Data Analysis",
-        sidebar = sidebar(
-          # Input: Input box for Maximum Temperature ----
-          numericInput(
-            inputId = "maxTemperature",
-            label = "Maximum Temperature (Degrees Celsius):",
-            value = 80
-          ),
-          # Input: Input box for Desired Temperature----
-          numericInput(
-            inputId = "desiredTemperature",
-            label = "Desired Temperature (Degrees Celsius):",
-            value = 70
-          ),
-          # Input: X-axis column selector ----
-          selectInput(
-            inputId = "xColumn",
-            label = "Select X-axis Column:",
-            choices = NULL,
-            selected = NULL
-          ),
-          # Input: Y-axis column selector ----
-          selectInput(
-            inputId = "yColumn",
-            label = "Select Y-axis Column:",
-            choices = NULL,
-            selected = NULL
-          )
-        ),
-        card(
-          card_header("Data Preview"),
-          tableOutput("dataPreview")
-        ),
-        card(
-          card_header("Scatter Plot"),
-          plotOutput(outputId = "scatterPlot")
-        )
+      card(
+        card_header("Data Preview"),
+        tableOutput("dataPreview")
       )
     ),
     # Tab 2: Additional Analysis
@@ -94,8 +75,8 @@ ui <- fluidPage(
           selectInput(
             inputId = "histColor",
             label = "Histogram Color:",
-            choices = c("Blue" = "#007bc2", "Red" = "#dc3545", "Green" = "#28a745", "Orange" = "#fd7e14"),
-            selected = "#007bc2"
+            choices = c("Orange" = "#FF6B35", "Purple" = "#8B5CF6", "Blue" = "#3B82F6", "Green" = "#10B981"),
+            selected = "#FF6B35"
           )
         ),
         card(
@@ -192,23 +173,6 @@ server <- function(input, output) {
     return(df)
   })
  
-  # Update column choices when data changes (Tab 1)
-  observe({
-    req(data())
-    column_names <- names(data())
-    updateSelectInput(
-      session = getDefaultReactiveDomain(),
-      inputId = "xColumn",
-      choices = column_names,
-      selected = column_names[1]  # Select first column by default
-    )
-    updateSelectInput(
-      session = getDefaultReactiveDomain(),
-      inputId = "yColumn",
-      choices = column_names,
-      selected = column_names[min(2, length(column_names))]  # Select second column by default, or first if only one column
-    )
-  })
   
   # Update column choices when data changes (Tab 2)
   observe({
@@ -228,47 +192,6 @@ server <- function(input, output) {
     head(data(), 5)  # Show all rows
   })
   
-  # Scatter plot of the uploaded data ----
-  output$scatterPlot <- renderPlot({
-    req(data(), input$xColumn, input$yColumn)
-    
-    # Get the selected column data
-    x <- data()[[input$xColumn]]
-    y <- data()[[input$yColumn]]
-    
-    # Check if both columns are numeric
-    if (!is.numeric(x) || !is.numeric(y)) {
-      plot.new()
-      text(0.5, 0.5, "Please select numeric columns for both X and Y axes", 
-           cex = 1.5, col = "red")
-      return()
-    }
-    
-    # Remove any NA values
-    valid_data <- !is.na(x) & !is.na(y)
-    x <- x[valid_data]
-    y <- y[valid_data]
-    
-    if (length(x) == 0) {
-      plot.new()
-      text(0.5, 0.5, "No valid numeric data found", 
-           cex = 1.5, col = "red")
-      return()
-    }
-    
-    # Create scatter plot
-    plot(x, y, 
-         col = "#007bc2", 
-         pch = 19,
-         xlab = input$xColumn,
-         ylab = input$yColumn,
-         main = paste("Scatter Plot:", input$xColumn, "vs", input$yColumn))
-    
-    # Add a trend line
-    if (length(x) > 1) {
-      abline(lm(y ~ x), col = "red", lwd = 2)
-    }
-  })
 
 
 
