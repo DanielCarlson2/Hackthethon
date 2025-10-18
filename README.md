@@ -15,7 +15,7 @@ We have been contracted to develop a tool that will analyze GPU data for datacen
 
 Our scope includes GPUs organized into racks in the specified datacenter from our client. The scope does not include datacenters using different types of GPUs in the same datacenter (however this feature could be implemented in the future). Also, the scope does not take into account the cost of some GPUs being higher than others and does not have a system to prioritize specified GPUs over others. 
 
-### How to Install the Tool
+### How to Install the Tool:
 
 - Have R and R Studio downloaded
 - Clone the github repository or download the ZIP file from github and open it in RStudio
@@ -25,7 +25,7 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
   - Max Memory Utilization
   - Max Power Usage
 
-### How to use 
+### How to use:  
 
 GIF OF USER USING 
 
@@ -48,7 +48,7 @@ GIF OF USER USING
 <details> 
 <summary>Expand</summary>
   
-#### General overview/purpose
+#### General Overview/Purpose
 There are three CSV Dataset Generators depending on the type of GPU failure scenario you wish to simulate. 
 
 We have dataset_generator_no_GPU_failure.R where all GPUs and GPU racks are running at optimal, safe metrics. 
@@ -57,11 +57,11 @@ The second generator is dataset_generator_with_errors.R where a majority of GPUs
 
 The third generator is dataset_generator_with_dead_GPUs.R where a majority of GPUs are running at optimal, safe metrics however a specified number of GPUs (we use 3) are specified to be completely dead/shut down, and a specified percentage of GPUs (we use 30%) are specified to be running at metrics close to failure, but not completely shut down. A dead GPU means that the GPU is no longer able to draw power and has no memory use. This simulates a datacenter that has a majority of GPUs and racks that are operating healthily, some that are broken and need immediate maintenance/intervention to be replaced, and some that are operating at dangerous levels and also need immediate maintenance/intervention. 
 
-#### How to install 
+#### How to Install: 
 - Download the .csv generator files from the github repository.
 - Run in R or RStudio.
 
-#### How to use .csv generator 
+#### How to use .csv Generator:
 - Open the .csv generator code that you just installed 
 - With in the generator code modify the sections labelled with comments
 -The following can be changed:
