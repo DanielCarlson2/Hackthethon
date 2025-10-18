@@ -100,10 +100,10 @@ dataset_generator_with_dead_GPUs.R
 - Most GPUs are healthy.
 - A specified number of GPUs (default 3) are completely dead or shut down (no power draw or memory usage).
 - Another specified percentage (default 30%) of GPUs are close to failure but still operational.
--Simulates a datacenter containing:
-  -Healthy GPUs running safely,
-  -Dead GPUs that need replacement, and
-  -High-stress GPUs requiring maintenance intervention.
+- Simulates a datacenter containing:
+  - Healthy GPUs running safely,
+  - Dead GPUs that need replacement, and
+  - High-stress GPUs requiring maintenance intervention.
 
 #### How to Install: 
 - Download the .csv generator files from the GitHub repository.
