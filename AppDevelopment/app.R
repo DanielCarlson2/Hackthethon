@@ -155,12 +155,75 @@ ui <- fluidPage(
       )
     ),
 
-    # Tab 3: By GPU (Empty)
+    # Tab 3: By GPU - Failure Detection
     tabPanel(
       "By GPU",
-      card(
-        card_header("By GPU Analysis"),
-        p("This tab is currently empty.")
+      page_sidebar(
+        title = "GPU Failure Detection",
+        sidebar = sidebar(
+          h4("Failure Thresholds"),
+          # Temperature thresholds
+          numericInput(
+            inputId = "tempMax",
+            label = "Temperature Max (°C):",
+            value = 85,
+            min = 0,
+            max = 200
+          ),
+          numericInput(
+            inputId = "tempMin",
+            label = "Temperature Min (°C):",
+            value = 30,
+            min = 0,
+            max = 200
+          ),
+          # Power usage thresholds
+          numericInput(
+            inputId = "powerMax",
+            label = "Power Usage Max (W):",
+            value = 250,
+            min = 0,
+            max = 1000
+          ),
+          numericInput(
+            inputId = "powerMin",
+            label = "Power Usage Min (W):",
+            value = 50,
+            min = 0,
+            max = 1000
+          ),
+          # Memory usage thresholds
+          numericInput(
+            inputId = "memoryMax",
+            label = "Memory Usage Max (%):",
+            value = 95,
+            min = 0,
+            max = 100
+          ),
+          numericInput(
+            inputId = "memoryMin",
+            label = "Memory Usage Min (%):",
+            value = 10,
+            min = 0,
+            max = 100
+          ),
+          # Action button to trigger analysis
+          actionButton(
+            inputId = "analyzeFailures",
+            label = "Analyze GPU Failures",
+            class = "btn-primary",
+            style = "width: 100%; margin-top: 20px;"
+          )
+        ),
+        # Main content area
+        fluidRow(
+          column(12,
+            card(
+              card_header("GPU Failure Analysis Results"),
+              uiOutput("failureResults")
+            )
+          )
+        )
       )
     )
   )
@@ -449,53 +512,184 @@ observe({
          ylab = "Frequency")
   })
 
-  output$generalHistogram <- renderPlot({
-    req(data(), input$histColumn)
+  # GPU Failure Detection Logic
+  output$failureResults <- renderUI({
+    req(data(), input$analyzeFailures)
     
     df <- data()
     
-    # Check if we have at least 4 columns
-    if (ncol(df) < 4) {
-      plot.new()
-      text(0.5, 0.5, "Dataset must have at least 4 columns", 
-           cex = 1.5, col = "red")
-      return()
+    # Check if we have enough columns
+    if (ncol(df) < 8) {
+      return(
+        div(
+          class = "alert alert-danger",
+          h4("Error"),
+          p("Dataset must have at least 8 columns for GPU failure analysis.")
+        )
+      )
     }
     
-    # Check if the selected column is the error message
-    if (input$histColumn == "Dataset must have at least 4 columns") {
-      plot.new()
-      text(0.5, 0.5, "Please upload a dataset with at least 4 columns", 
-           cex = 1.5, col = "red")
-      return()
+    # Get column names (assuming standard structure)
+    col_names <- names(df)
+    
+    # Define column indices based on the dataset structure
+    gpu_id_col <- col_names[1]      # GPU_Unique_ID
+    cluster_col <- col_names[2]     # GPU_Cluster_ID  
+    time_col <- col_names[3]       # Time_Period
+    temp_col <- col_names[4]       # Average_GPU_Temperature
+    power_col <- col_names[6]      # Average_GPU_Power_Usage
+    memory_col <- col_names[8]     # Average_GPU_Memory_Usage
+    
+    # Initialize failure tracking
+    failures <- data.frame(
+      GPU_ID = character(),
+      Cluster_ID = character(),
+      Time_Period = character(),
+      Failure_Type = character(),
+      Value = numeric(),
+      Threshold = numeric(),
+      Row_Number = numeric(),
+      stringsAsFactors = FALSE
+    )
+    
+    # Check each row for failures
+    for (i in seq_len(nrow(df))) {
+      row <- df[i, ]
+      
+      # Check temperature failures
+      temp_val <- as.numeric(row[[temp_col]])
+      if (!is.na(temp_val)) {
+        if (temp_val > input$tempMax) {
+          failures <- rbind(failures, data.frame(
+            GPU_ID = as.character(row[[gpu_id_col]]),
+            Cluster_ID = as.character(row[[cluster_col]]),
+            Time_Period = as.character(row[[time_col]]),
+            Failure_Type = "Temperature Too High",
+            Value = temp_val,
+            Threshold = input$tempMax,
+            Row_Number = i,
+            stringsAsFactors = FALSE
+          ))
+        }
+        if (temp_val < input$tempMin) {
+          failures <- rbind(failures, data.frame(
+            GPU_ID = as.character(row[[gpu_id_col]]),
+            Cluster_ID = as.character(row[[cluster_col]]),
+            Time_Period = as.character(row[[time_col]]),
+            Failure_Type = "Temperature Too Low",
+            Value = temp_val,
+            Threshold = input$tempMin,
+            Row_Number = i,
+            stringsAsFactors = FALSE
+          ))
+        }
+      }
+      
+      # Check power usage failures
+      power_val <- as.numeric(row[[power_col]])
+      if (!is.na(power_val)) {
+        if (power_val > input$powerMax) {
+          failures <- rbind(failures, data.frame(
+            GPU_ID = as.character(row[[gpu_id_col]]),
+            Cluster_ID = as.character(row[[cluster_col]]),
+            Time_Period = as.character(row[[time_col]]),
+            Failure_Type = "Power Usage Too High",
+            Value = power_val,
+            Threshold = input$powerMax,
+            Row_Number = i,
+            stringsAsFactors = FALSE
+          ))
+        }
+        if (power_val < input$powerMin) {
+          failures <- rbind(failures, data.frame(
+            GPU_ID = as.character(row[[gpu_id_col]]),
+            Cluster_ID = as.character(row[[cluster_col]]),
+            Time_Period = as.character(row[[time_col]]),
+            Failure_Type = "Power Usage Too Low",
+            Value = power_val,
+            Threshold = input$powerMin,
+            Row_Number = i,
+            stringsAsFactors = FALSE
+          ))
+        }
+      }
+      
+      # Check memory usage failures
+      memory_val <- as.numeric(row[[memory_col]])
+      if (!is.na(memory_val)) {
+        if (memory_val > input$memoryMax) {
+          failures <- rbind(failures, data.frame(
+            GPU_ID = as.character(row[[gpu_id_col]]),
+            Cluster_ID = as.character(row[[cluster_col]]),
+            Time_Period = as.character(row[[time_col]]),
+            Failure_Type = "Memory Usage Too High",
+            Value = memory_val,
+            Threshold = input$memoryMax,
+            Row_Number = i,
+            stringsAsFactors = FALSE
+          ))
+        }
+        if (memory_val < input$memoryMin) {
+          failures <- rbind(failures, data.frame(
+            GPU_ID = as.character(row[[gpu_id_col]]),
+            Cluster_ID = as.character(row[[cluster_col]]),
+            Time_Period = as.character(row[[time_col]]),
+            Failure_Type = "Memory Usage Too Low",
+            Value = memory_val,
+            Threshold = input$memoryMin,
+            Row_Number = i,
+            stringsAsFactors = FALSE
+          ))
+        }
+      }
     }
     
-    x <- df[[input$histColumn]]
-    
-    if (!is.numeric(x)) {
-      plot.new()
-      text(0.5, 0.5, "Please select a numeric column", 
-           cex = 1.5, col = "red")
-      return()
+    # Create UI based on results
+    if (nrow(failures) == 0) {
+      return(
+        div(
+          class = "alert alert-success",
+          h4("✅ No Failures Detected"),
+          p("All GPUs are operating within the specified thresholds.")
+        )
+      )
+    } else {
+      # Create failure boxes
+      failure_boxes <- lapply(seq_len(nrow(failures)), function(i) {
+        failure <- failures[i, ]
+        
+        # Determine alert class based on failure type
+        alert_class <- if (grepl("Too High", failure$Failure_Type)) {
+          "alert-danger"
+        } else {
+          "alert-warning"
+        }
+        
+        div(
+          class = paste("alert", alert_class),
+          style = "margin-bottom: 15px;",
+          h5(paste("🚨 GPU Failure Detected")),
+          p(strong("GPU ID:"), failure$GPU_ID),
+          p(strong("Cluster:"), failure$Cluster_ID),
+          p(strong("Time Period:"), failure$Time_Period),
+          p(strong("Failure Type:"), failure$Failure_Type),
+          p(strong("Value:"), round(failure$Value, 2)),
+          p(strong("Threshold:"), round(failure$Threshold, 2)),
+          p(strong("Row Number:"), failure$Row_Number)
+        )
+      })
+      
+      return(
+        div(
+          div(
+            class = "alert alert-info",
+            h4(paste("⚠️", nrow(failures), "Failure(s) Detected")),
+            p("The following GPUs have exceeded the specified thresholds:")
+          ),
+          failure_boxes
+        )
+      )
     }
-    
-    x <- x[!is.na(x)]
-    
-    if (length(x) == 0) {
-      plot.new()
-      text(0.5, 0.5, "No valid numeric data found", 
-           cex = 1.5, col = "red")
-      return()
-    }
-    
-    # Create histogram with custom settings
-    hist(x, 
-         breaks = input$bins,
-         col = input$histColor, 
-         border = "white",
-         xlab = input$histColumn,
-         main = paste("Histogram of", input$histColumn),
-         ylab = "Frequency")
   })
 }
 
