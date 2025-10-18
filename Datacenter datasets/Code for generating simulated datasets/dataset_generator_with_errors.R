@@ -24,6 +24,7 @@ library(dplyr)
 
 set.seed(123)  # reproducibility
 
+# CHANGE TO SPECIFY WHAT YOU WANT
 size <-  5        # GPUs per rack
 racks <- 10       # number of racks
 time_periods <- 24  # number of time periods (each digit is one hour of a 24 hour day)
@@ -32,6 +33,7 @@ time_periods <- 24  # number of time periods (each digit is one hour of a 24 hou
 n <- size * racks * time_periods
 
 # Randomly select 30% of racks to be "failing"
+# CHANGE THE PERCENTAGE TO SPECIFY WHAT YOU WANT (IN ROUND)
 failing_rack_ids <- sample(1:racks, size = round(0.3 * racks), replace = FALSE)
 
 # Create base structure
@@ -75,6 +77,7 @@ to_export <- one %>%
 
 
 # Save to CSV
+# CHANGE THE FINAL CSV NAME TO AVOID OVERWRITTING FILES AND MATCH YOUR FILE DIRECTORY TO STORE THE CSV FILE
 write.csv(to_export, "/cloud/project/Datacenter_datasets/_3.csv", row.names = FALSE)
 
 # Print failing racks
