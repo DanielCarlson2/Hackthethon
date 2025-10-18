@@ -29,6 +29,7 @@ library(readr)
 # Example dataset parameters:
 set.seed(123)  # use for reproducibility of the random data
 
+# CHANGE TO SPECIFY WHAT YOU WANT
 size <-  5        # GPUs per rack
 racks <- 5      # number of racks
 time_periods <- 24  # number of time periods
