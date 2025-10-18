@@ -81,7 +81,7 @@ dataset_generator_with_dead_GPUs.R
   - The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer.
 - Once you are happy with the specifications that you have chosen, run the code! 
 
-#### Our Dataset Notes
+#### Dataset Notes
 For our generated simulated datasets we used the following inputs:
  - Number of Racks: 10
  - GPUs per Rack: 5
