@@ -71,10 +71,10 @@ The third generator is dataset_generator_with_dead_GPUs.R where a majority of GP
   - Once you are happy with the specifications that you have chosen, run the code! 
 
 #### Our Dataset Notes
-For our generated simulated datasets we used the following inputs
-Number of Racks: 10
-GPUs per Rack: 5
-Time Periods: 24 (24 hour day, so data is collected per hour)
-Total Data Points: 1200
-Temperature Range: 30 ℃ to 90 ℃
+For our generated simulated datasets we used the following inputs:
+ - Number of Racks: 10
+ - GPUs per Rack: 5
+ - Time Periods: 24 (24 hour day, so data is collected per hour)
+ - Total Data Points: 1200
+ - Temperature Range: 30 ℃ to 90 ℃
 </details>
