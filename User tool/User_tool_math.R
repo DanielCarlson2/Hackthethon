@@ -18,7 +18,8 @@ GPU_data = read_csv(filename)
 
 # user inputted data
 #calculating sigma_short (the mean of each rack which is our subgroup)
-GPU_stats = GPU_data %>% group_by(Rack_ID) %>% summarize (
+get_chart_data <- function(GPU_data) {
+GPU_stats = GPU_data %>% group_by(Time_Period) %>% summarize (
    num_GPU_rack = n(), sd_avetemp = sd(Average_GPU_Temperature), mean_avetemp = mean(Average_GPU_Temperature),
    sd_avepow = sd(Average_GPU_Power_Usage), mean_avepow = mean(Average_GPU_Power_Usage),
    sd_avemem = sd(Average_GPU_Memory_Usage), mean_avemem = mean(Average_GPU_Memory_Usage),
@@ -30,6 +31,8 @@ GPU_stats = GPU_data %>% group_by(Rack_ID) %>% summarize (
          se_avetemp = sigma_s_avetemp / sqrt(num_GPU_rack), se_avepow = sigma_s_avepow / sqrt(num_GPU_rack), se_avemem = sigma_s_avemem / sqrt(num_GPU_rack),
          upper_avetemp = xbbar_avetemp + 3*se_avetemp, upper_avepow = xbbar_avepow + 3*se_avepow, upper_avemem = xbbar_avemem + 3*se_avemem,
          lower_avetemp = xbbar_avetemp - 3*se_avetemp, lower_avepow = xbbar_avepow - 3*se_avepow, lower_avemem = xbbar_avemem - 3*se_avemem )
+ return(GPU_stats)
+}
 
 
 # # if statements checking the individual GPUs for failure

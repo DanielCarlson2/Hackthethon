@@ -4,6 +4,8 @@ library(shiny)
 library(bslib)
 library(dplyr)
 
+source("/cloud/project/User tool/User_tool_math.R")
+
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
     tags$style(HTML("
@@ -370,6 +372,7 @@ server <- function(input, output) {
     head(df, num_points)
   })
   
+  
   # Display average statistics for columns 4 through end
   output$averageStats <- renderText({
     req(data())
@@ -560,19 +563,104 @@ observe({
 
   # Create reactive plot for selected rack
   output$rackPlot <- renderPlot({
-    req(data(), selectedRack())
+    req(data(), selectedRack(), input$rackMetric)
     
     # Filter data for selected rack
     rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
     
-    # Create histogram with fixed mint green color and 30 bins
-    hist(rack_data[[input$histColumn]], 
-         breaks = 30,
-         col = "#20B2AA",  # Fixed mint green color
-         border = "white",
-         xlab = input$histColumn,
-         main = paste("Histogram of", input$histColumn, "for Rack:", selectedRack()),
-         ylab = "Frequency")
+    if (nrow(rack_data) == 0) {
+      plot.new()
+      text(0.5, 0.5, "No data found for selected rack", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Get column names
+    col_names <- names(rack_data)
+    time_col <- col_names[3]  # Time_Period
+    
+    # Determine metric column based on selection
+    metric_col <- switch(input$rackMetric,
+      "temperature" = col_names[4],  # Average_GPU_Temperature
+      "memory" = col_names[8],       # Average_GPU_Memory_Usage
+      "power" = col_names[6]         # Average_GPU_Power_Usage
+    )
+    
+    # Get metric data
+    metric_data <- rack_data[[metric_col]]
+    metric_data <- as.numeric(metric_data[!is.na(metric_data)])
+    
+    if (length(metric_data) == 0) {
+      plot.new()
+      text(0.5, 0.5, "No valid data for selected metric", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Calculate control limits
+    mean_val <- mean(metric_data)
+    std_val <- sd(metric_data)
+    upper_control <- mean_val + 3 * std_val
+    lower_control <- mean_val - 3 * std_val
+    
+    # Get specification limits from inputs
+    if (input$rackMetric == "temperature") {
+      spec_upper <- input$rackTempMax
+      spec_lower <- NA  # No lower temp limit specified
+    } else if (input$rackMetric == "memory") {
+      spec_upper <- input$rackMemMax
+      spec_lower <- input$rackMemMin
+    } else {  # power
+      spec_upper <- NA  # No power limits specified in current inputs
+      spec_lower <- NA
+    }
+    
+    # Create the plot
+    time_points <- 1:length(metric_data)
+    plot(time_points, metric_data,
+         type = "b",
+         pch = 19,
+         col = "#20B2AA",
+         lwd = 2,
+         xlab = "Time Points",
+         ylab = paste("Average", tools::toTitleCase(input$rackMetric)),
+         main = paste("Rack", selectedRack(), "-", tools::toTitleCase(input$rackMetric), "Control Chart"),
+         cex.lab = 1.2,
+         cex.main = 1.3)
+    
+    # Add control limits
+    abline(h = mean_val, col = "#2E8B57", lwd = 2, lty = 1)  # Centerline
+    abline(h = upper_control, col = "#FF6347", lwd = 2, lty = 2)  # Upper control limit
+    abline(h = lower_control, col = "#FF6347", lwd = 2, lty = 2)  # Lower control limit
+    
+    # Add specification limits if available
+    if (!is.na(spec_upper)) {
+      abline(h = spec_upper, col = "#FFD700", lwd = 2, lty = 3)  # Upper spec limit
+    }
+    if (!is.na(spec_lower)) {
+      abline(h = spec_lower, col = "#FFD700", lwd = 2, lty = 3)  # Lower spec limit
+    }
+    
+    # Add legend
+    legend_items <- c("Data Points", "Centerline", "Control Limits")
+    legend_cols <- c("#20B2AA", "#2E8B57", "#FF6347")
+    legend_lty <- c(1, 1, 2)
+    
+    if (!is.na(spec_upper) || !is.na(spec_lower)) {
+      legend_items <- c(legend_items, "Specification Limits")
+      legend_cols <- c(legend_cols, "#FFD700")
+      legend_lty <- c(legend_lty, 3)
+    }
+    
+    legend("topright", 
+           legend = legend_items,
+           col = legend_cols,
+           lty = legend_lty,
+           lwd = 2,
+           cex = 0.9)
+    
+    # Add grid
+    grid()
   })
   
   # Tab 2: Additional plot (histogram with custom settings)
