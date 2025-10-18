@@ -49,7 +49,12 @@ get_chart_data <- function(GPU_data) {
       upper_avepow  = xbbar_avepow  + 3 * se_avepow,
       lower_avepow  = xbbar_avepow  - 3 * se_avepow,
       upper_avemem  = xbbar_avemem  + 3 * se_avemem,
-      lower_avemem  = xbbar_avemem  - 3 * se_avemem
+      lower_avemem  = xbbar_avemem  - 3 * se_avemem,
+
+      # Ppk values
+      ppk_avetemp = min(1, (xbbar_avetemp - spec_lower) / (3 * se_avetemp)),
+      ppk_avepow  = min(1, (xbbar_avepow  - spec_lower) / (3 * se_avepow)),
+      ppk_avemem  = min(1, (xbbar_avemem  - spec_lower) / (3 * se_avemem)),
     )
 
   return(GPU_stats)
