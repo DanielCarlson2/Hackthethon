@@ -46,7 +46,7 @@ GIF OF USER USING
 
 ### Read Me for CSV Dataset Generators 
 <details> 
-<summary>Old Title</summary>
+<summary>Expand</summary>
   
 #### General overview/purpose
 There are three CSV Dataset Generators depending on the type of GPU failure scenario you wish to simulate. 
@@ -58,17 +58,17 @@ The second generator is dataset_generator_with_errors.R where a majority of GPUs
 The third generator is dataset_generator_with_dead_GPUs.R where a majority of GPUs are running at optimal, safe metrics however a specified number of GPUs (we use 3) are specified to be completely dead/shut down, and a specified percentage of GPUs (we use 30%) are specified to be running at metrics close to failure, but not completely shut down. A dead GPU means that the GPU is no longer able to draw power and has no memory use. This simulates a datacenter that has a majority of GPUs and racks that are operating healthily, some that are broken and need immediate maintenance/intervention to be replaced, and some that are operating at dangerous levels and also need immediate maintenance/intervention. 
 
 #### How to install 
-Download the .csv generator files from the github repository.
-Run in R or RStudio
+- Download the .csv generator files from the github repository.
+- Run in R or RStudio.
 
 #### How to use .csv generator 
 - Open the .csv generator code that you just installed 
 - With in the generator code modify the sections labelled with comments
-  -The following can be changed:
-    -The number of racks, GPUs, and time period
-    -(If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead
-    -The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer
-- Once you are happy with the specifications that you have chosen, run the code! 
+-The following can be changed:
+  - The number of racks, GPUs, and time period
+  - (If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead
+  - The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer
+  - Once you are happy with the specifications that you have chosen, run the code! 
 
 #### Our Dataset Notes
 For our generated simulated datasets we used the following inputs
