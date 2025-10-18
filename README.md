@@ -7,7 +7,7 @@ Data centers are key infrastructure in the AI economy, providing servers equippe
 
 ### Project goal
 
-Create an intuitive Shinyapp dashboard tool to help users find existing hardware failures in GPU racks and individual GPUs based on trends in GPU temperature, powerdraw, and memory utilization collected on an hourly basis. (can add branding of our tool and that it is newish)
+Create an intuitive Shinyapp dashboard tool to help users find existing hardware failures in GPU racks and individual GPUs based on trends in GPU temperature, powerdraw, and memory utilization collected on an hourly basis.
 
 ### Project Scope 
 
