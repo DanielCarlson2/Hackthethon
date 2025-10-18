@@ -18,7 +18,7 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 ### How to Install the Tool:
 
 - Have R and R Studio downloaded.
-- Clone the github repository or download the ZIP file from github and open it in RStudio.
+- Clone the GitHub repository or download the ZIP file from GitHub and open it in RStudio.
 - Place your .csv files in the Dashboard.
 - Input the following GPU specification limit information:
   - Max Temperature
@@ -105,7 +105,7 @@ dataset_generator_with_dead_GPUs.R
   -High-stress GPUs requiring maintenance intervention.
 
 #### How to Install: 
-- Download the .csv generator files from the github repository.
+- Download the .csv generator files from the GitHub repository.
 - Run in R or RStudio.
 
 #### How to use .csv Generator:
