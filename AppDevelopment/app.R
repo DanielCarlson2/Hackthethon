@@ -3,7 +3,6 @@
 library(shiny)
 library(bslib)
 
-
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
   # Custom theme with orange and purple colors ----
@@ -21,10 +20,8 @@ ui <- fluidPage(
     fg = "#1E293B",            # Main text color
     "font-family-base" = "'Inter', 'Segoe UI', sans-serif"
   ),
-  
   # App title ----
   titlePanel("Data Center GPU Health Dashboard"),
-  
   # Global CSV file input ----
   fluidRow(
     column(12,
@@ -39,18 +36,16 @@ ui <- fluidPage(
       )
     )
   ),
-  
   # Main content area with tabs ----
   tabsetPanel(
     id = "mainTabs",
-        # Tab 4: How to Use
+     # Tab 4: How to Use
     tabPanel(
       "How to Use",
       card(
         card_header("Instructions"),
         h4("Getting Started"),
         p("Welcome to the Data Center GPU Health Dashboard! Follow these steps to analyze your data:"),
-        
         h4("Step 1: Upload Your Data"),
         p("• Click 'Choose a CSV file...' to upload your dataset"),
         p("• Make sure your CSV file contains numeric columns for analysis"),
@@ -111,9 +106,9 @@ ui <- fluidPage(
           numericInput(
             inputId = "bins",
             label = "Number of Bins:",
-            value = 30,
+            value = 100,
             min = 5,
-            max = 100
+            max = 1000
           ),
           # Input: Color selector ----
           selectInput(
