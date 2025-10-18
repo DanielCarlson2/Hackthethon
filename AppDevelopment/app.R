@@ -26,6 +26,18 @@ ui <- fluidPage(
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(32, 178, 170, 0.3);
     }
+    .boxButton.selected {
+      background-color: #FF6347;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(255, 99, 71, 0.4);
+      border: 2px solid #FF4500;
+    }
+    .boxButton.selected:hover {
+      background-color: #FF4500;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(255, 69, 0, 0.5);
+    }
   ")),
   # Custom mint-themed design ----
   theme = bs_theme(
@@ -420,16 +432,23 @@ output$rackButtons <- renderUI({
   req(data())
   racks <- unique(data()$Rack_ID)
   
+  # Trigger re-render when selection changes
+  selectedRack()
+  
   # Define number of columns for the grid
   n_cols <- 4  # adjust as desired
   n_racks <- length(racks)
   n_rows <- ceiling(n_racks / n_cols)
   
   button_list <- lapply(racks, function(rack) {
+    # Check if this rack is selected
+    is_selected <- !is.null(selectedRack()) && selectedRack() == rack
+    button_class <- if (is_selected) "boxButton selected" else "boxButton"
+    
     actionButton(
       inputId = paste0("rack_", rack),
       label = paste("Rack:", rack),
-      class = "boxButton"
+      class = button_class
     )
   })
   
