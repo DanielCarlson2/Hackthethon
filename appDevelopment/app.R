@@ -123,7 +123,7 @@ ui <- fluidPage(
         p("This Data Center GPU Health Dashboard was developed by:"),
         tags$ul(
           tags$li("Daniel Carlson, M.Eng Aerospace Engineering, Cornell University"),
-          tags$li("Rene Umeh, M.Eng Mechanical Engineering, Cornell University"),
+          tags$li("René Umeh, M.S. Mechanical Engineering, Cornell University"),
           tags$li("Nevin Motto, M.Eng Mechanical Engineering, Cornell University"),
           tags$li("Evelyne Morisseau, Ph.D. Mechanical Engineering, Cornell University"),
           tags$li("Charlie Gagliardo, M.Eng Mechanical Engineering, Cornell University")
