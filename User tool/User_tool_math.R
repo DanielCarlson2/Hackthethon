@@ -19,7 +19,7 @@ GPU_data = read_csv(filename)
 # user inputted data
 #calculating sigma_short (the mean of each rack which is our subgroup)
 get_chart_data <- function(GPU_data) {
-GPU_stats = GPU_data %>% group_by(Time_Period) %>% summarize (
+GPU_stats = GPU_data %>% group_by(GPU_Cluster_ID) %>% summarize (
    num_GPU_rack = n(), sd_avetemp = sd(Average_GPU_Temperature), mean_avetemp = mean(Average_GPU_Temperature),
    sd_avepow = sd(Average_GPU_Power_Usage), mean_avepow = mean(Average_GPU_Power_Usage),
    sd_avemem = sd(Average_GPU_Memory_Usage), mean_avemem = mean(Average_GPU_Memory_Usage),
