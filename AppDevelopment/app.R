@@ -106,6 +106,18 @@ ui <- fluidPage(
       page_sidebar(
         title = "General Analysis",
         sidebar = sidebar(
+          # Input: Hour selector ----
+          selectInput(
+            inputId = "selectedHour",
+            label = "Select Time Period:",
+            choices = c("All Hours (Global)" = "all", "Hour 1" = "1", "Hour 2" = "2", "Hour 3" = "3", 
+                       "Hour 4" = "4", "Hour 5" = "5", "Hour 6" = "6", "Hour 7" = "7", "Hour 8" = "8",
+                       "Hour 9" = "9", "Hour 10" = "10", "Hour 11" = "11", "Hour 12" = "12",
+                       "Hour 13" = "13", "Hour 14" = "14", "Hour 15" = "15", "Hour 16" = "16",
+                       "Hour 17" = "17", "Hour 18" = "18", "Hour 19" = "19", "Hour 20" = "20",
+                       "Hour 21" = "21", "Hour 22" = "22", "Hour 23" = "23", "Hour 24" = "24"),
+            selected = "all"
+          ),
           # Input: Column selector for histogram ----
           selectInput(
             inputId = "histColumn",
@@ -131,14 +143,17 @@ ui <- fluidPage(
         ),
         card(
         card_header("Data Preview"),
+        p("Shows data for the selected time period. Use the dropdown above to filter by specific hours."),
         tableOutput("dataPreview")
       ),
       card(
-        card_header("Average Statistics"),
+        card_header("Statistics Analysis"),
+        p("Statistical analysis for the selected time period. Choose 'All Hours' for global statistics or select a specific hour."),
         verbatimTextOutput("averageStats")
       ),
       card(
-        card_header("Histogram"),
+        card_header("Data Distribution"),
+        p("Histogram showing the distribution of selected metrics for the chosen time period."),
         plotOutput(outputId= "generalHistogram")
       )
     ),
@@ -219,6 +234,15 @@ ui <- fluidPage(
         fluidRow(
           column(12,
             card(
+              card_header("Failure Trend Analysis"),
+              p("This plot shows the number of GPU failures over time periods, with a horizontal line indicating the mean failure count."),
+              plotOutput("failureTrendPlot")
+            )
+          )
+        ),
+        fluidRow(
+          column(12,
+            card(
               card_header("GPU Failure Analysis Results"),
               uiOutput("failureResults")
             )
@@ -271,7 +295,17 @@ server <- function(input, output) {
   # Display data preview
   output$dataPreview <- renderTable({
     req(data())
-    head(data(), 5)  # Show all rows
+    
+    df <- data()
+    
+    # Filter data by selected hour if not "all"
+    if (input$selectedHour != "all") {
+      # Assuming Time_Period is column 3 (index 3)
+      time_col <- names(df)[3]
+      df <- df[df[[time_col]] == as.numeric(input$selectedHour), ]
+    }
+    
+    head(df, 10)  # Show first 10 rows of filtered data
   })
   
   # Display average statistics for columns 4 through end
@@ -285,10 +319,26 @@ server <- function(input, output) {
       return("Dataset must have at least 4 columns to show statistics.")
     }
     
+    # Filter data by selected hour if not "all"
+    if (input$selectedHour != "all") {
+      # Assuming Time_Period is column 3 (index 3)
+      time_col <- names(df)[3]
+      df <- df[df[[time_col]] == as.numeric(input$selectedHour), ]
+      
+      if (nrow(df) == 0) {
+        return(paste("No data found for Hour", input$selectedHour))
+      }
+    }
+    
     # Get columns 4 through end
     cols_to_analyze <- names(df)[4:ncol(df)]
     
-    summary_text <- paste("Average Statistics for Columns:\n\n")
+    # Create header based on selection
+    if (input$selectedHour == "all") {
+      summary_text <- paste("Global Statistics (All Hours):\n\n")
+    } else {
+      summary_text <- paste("Statistics for Hour", input$selectedHour, ":\n\n")
+    }
     
     for (col in cols_to_analyze) {
       col_data <- df[[col]]
@@ -304,7 +354,8 @@ server <- function(input, output) {
             "  Standard Deviation:", round(sd(col_data_clean), 2), "\n",
             "  Median:", round(median(col_data_clean), 2), "\n",
             "  Min:", round(min(col_data_clean), 2), "\n",
-            "  Max:", round(max(col_data_clean), 2), "\n")
+            "  Max:", round(max(col_data_clean), 2), "\n",
+            "  Count:", length(col_data_clean), "\n")
         } else {
           summary_text <- paste(summary_text, col, ": No valid numeric data\n\n")
         }
@@ -512,6 +563,214 @@ observe({
          ylab = "Frequency")
   })
 
+  # General histogram for the General tab
+  output$generalHistogram <- renderPlot({
+    req(data(), input$histColumn)
+    
+    df <- data()
+    
+    # Filter data by selected hour if not "all"
+    if (input$selectedHour != "all") {
+      # Assuming Time_Period is column 3 (index 3)
+      time_col <- names(df)[3]
+      df <- df[df[[time_col]] == as.numeric(input$selectedHour), ]
+    }
+    
+    # Check if we have at least 4 columns
+    if (ncol(df) < 4) {
+      plot.new()
+      text(0.5, 0.5, "Dataset must have at least 4 columns", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Check if the selected column is the error message
+    if (input$histColumn == "Dataset must have at least 4 columns") {
+      plot.new()
+      text(0.5, 0.5, "Please upload a dataset with at least 4 columns", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    x <- df[[input$histColumn]]
+    
+    if (!is.numeric(x)) {
+      plot.new()
+      text(0.5, 0.5, "Please select a numeric column", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    x <- x[!is.na(x)]
+    
+    if (length(x) == 0) {
+      plot.new()
+      text(0.5, 0.5, "No valid numeric data found", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Create title based on hour selection
+    if (input$selectedHour == "all") {
+      plot_title <- paste("Histogram of", input$histColumn, "(All Hours)")
+    } else {
+      plot_title <- paste("Histogram of", input$histColumn, "(Hour", input$selectedHour, ")")
+    }
+    
+    # Create histogram with custom settings
+    hist(x, 
+         breaks = input$bins,
+         col = input$histColor, 
+         border = "white",
+         xlab = input$histColumn,
+         main = plot_title,
+         ylab = "Frequency")
+  })
+
+  # Failure Trend Plot
+  output$failureTrendPlot <- renderPlot({
+    req(data())
+    
+    df <- data()
+    
+    # Check if we have enough columns
+    if (ncol(df) < 8) {
+      plot.new()
+      text(0.5, 0.5, "Dataset must have at least 8 columns for failure analysis", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    # Get column names
+    col_names <- names(df)
+    gpu_id_col <- col_names[1]      # GPU_Unique_ID
+    cluster_col <- col_names[2]     # GPU_Cluster_ID  
+    time_col <- col_names[3]       # Time_Period
+    temp_col <- col_names[4]       # Average_GPU_Temperature
+    power_col <- col_names[6]      # Average_GPU_Power_Usage
+    memory_col <- col_names[8]     # Average_GPU_Memory_Usage
+    
+    # Get unique time periods and sort them
+    time_periods <- sort(unique(df[[time_col]]))
+    
+    # Initialize failure counts for each type and time period
+    temp_failures <- numeric(length(time_periods))
+    power_failures <- numeric(length(time_periods))
+    memory_failures <- numeric(length(time_periods))
+    
+    # Count failures for each time period
+    for (i in seq_along(time_periods)) {
+      time_period <- time_periods[i]
+      time_data <- df[df[[time_col]] == time_period, ]
+      
+      temp_count <- 0
+      power_count <- 0
+      memory_count <- 0
+      
+      # Check each row in this time period for failures
+      for (j in seq_len(nrow(time_data))) {
+        row <- time_data[j, ]
+        
+        # Check temperature failures
+        temp_val <- as.numeric(row[[temp_col]])
+        if (!is.na(temp_val)) {
+          if (temp_val > input$tempMax || temp_val < input$tempMin) {
+            temp_count <- temp_count + 1
+          }
+        }
+        
+        # Check power usage failures
+        power_val <- as.numeric(row[[power_col]])
+        if (!is.na(power_val)) {
+          if (power_val > input$powerMax || power_val < input$powerMin) {
+            power_count <- power_count + 1
+          }
+        }
+        
+        # Check memory usage failures
+        memory_val <- as.numeric(row[[memory_col]])
+        if (!is.na(memory_val)) {
+          if (memory_val > input$memoryMax || memory_val < input$memoryMin) {
+            memory_count <- memory_count + 1
+          }
+        }
+      }
+      
+      temp_failures[i] <- temp_count
+      power_failures[i] <- power_count
+      memory_failures[i] <- memory_count
+    }
+    
+    # Calculate means for each failure type
+    mean_temp <- mean(temp_failures)
+    mean_power <- mean(power_failures)
+    mean_memory <- mean(memory_failures)
+    
+    # Find the maximum value for y-axis scaling
+    max_failures <- max(temp_failures, power_failures, memory_failures)
+    
+    # Create the plot with proper scaling
+    plot(time_periods, temp_failures,
+         type = "b",  # Both points and lines
+         pch = 19,    # Solid circles
+         col = "#FF6B35",  # Orange color for temperature
+         lwd = 2,     # Line width
+         xlab = "Time Period",
+         ylab = "Number of Failures",
+         main = "GPU Failures Over Time by Type",
+         cex.lab = 1.2,
+         cex.main = 1.3,
+         ylim = c(0, max_failures * 1.1))  # Add some padding at top
+    
+    # Add power failures line
+    lines(time_periods, power_failures,
+          type = "b",
+          pch = 17,    # Triangle
+          col = "#3B82F6",  # Blue color for power
+          lwd = 2)
+    
+    # Add memory failures line
+    lines(time_periods, memory_failures,
+          type = "b",
+          pch = 15,    # Square
+          col = "#10B981",  # Green color for memory
+          lwd = 2)
+    
+    # Add horizontal lines for means
+    abline(h = mean_temp, 
+           col = "#FF6B35",  # Orange
+           lwd = 1, 
+           lty = 2)  # Dashed line
+    
+    abline(h = mean_power, 
+           col = "#3B82F6",  # Blue
+           lwd = 1, 
+           lty = 2)  # Dashed line
+    
+    abline(h = mean_memory, 
+           col = "#10B981",  # Green
+           lwd = 1, 
+           lty = 2)  # Dashed line
+    
+    # Add legend
+    legend("topright", 
+           legend = c("Temperature Failures", 
+                     "Power Failures", 
+                     "Memory Failures",
+                     paste("Temp Mean:", round(mean_temp, 2)),
+                     paste("Power Mean:", round(mean_power, 2)),
+                     paste("Memory Mean:", round(mean_memory, 2))),
+           col = c("#FF6B35", "#3B82F6", "#10B981", 
+                  "#FF6B35", "#3B82F6", "#10B981"),
+           lty = c(1, 1, 1, 2, 2, 2),
+           lwd = c(2, 2, 2, 1, 1, 1),
+           pch = c(19, 17, 15, NA, NA, NA),
+           cex = 0.9)
+    
+    # Add grid for better readability
+    grid()
+  })
+
   # GPU Failure Detection Logic
   output$failureResults <- renderUI({
     req(data(), input$analyzeFailures)
@@ -670,7 +929,7 @@ observe({
           style = "margin-bottom: 15px;",
           h5(paste("🚨 GPU Failure Detected")),
           p(strong("GPU ID:"), failure$GPU_ID),
-          p(strong("Cluster:"), failure$Cluster_ID),
+          p(strong("Rack:"), failure$Cluster_ID),
           p(strong("Time Period:"), failure$Time_Period),
           p(strong("Failure Type:"), failure$Failure_Type),
           p(strong("Value:"), round(failure$Value, 2)),
