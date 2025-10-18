@@ -1,4 +1,4 @@
-"GPU_Unique_ID","GPU_Cluster_ID","Time_Period","Average_GPU_Temperature","Peak_GPU_Temperature","Average_GPU_Power_Usage","Peak_GPU_Power_Usage","Average_GPU_Memory_Usage","Peak_GPU_Memory_Usage"
+"GPU_Unique_ID","Rack_ID","Time_Period","Average_GPU_Temperature","Peak_GPU_Temperature","Average_GPU_Power_Usage","Peak_GPU_Power_Usage","Average_GPU_Memory_Usage","Peak_GPU_Memory_Usage"
 1,1,1,71.6,78.7,170.3,214.7,76.8,85.8
 1,1,2,73.6,70.5,169.4,249.9,80.5,96
 1,1,3,84.4,80.1,168.2,225.8,72.2,85.8

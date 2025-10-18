@@ -418,7 +418,7 @@ server <- function(input, output) {
   # Rack buttons
 output$rackButtons <- renderUI({
   req(data())
-  racks <- unique(data()$GPU_Cluster_ID)
+  racks <- unique(data()$Rack_ID)
   
   # Define number of columns for the grid
   n_cols <- 4  # adjust as desired
@@ -454,7 +454,7 @@ output$rackButtons <- renderUI({
 # Handle dynamic button clicks
 observe({
   req(data())
-  racks <- unique(data()$GPU_Cluster_ID)
+  racks <- unique(data()$Rack_ID)
   
   lapply(racks, function(rack) {
     observeEvent(input[[paste0("rack_", rack)]], {
@@ -548,7 +548,7 @@ observe({
     req(data(), selectedRack(), input$rackMetric)
     
     # Filter data for selected rack
-    rack_data <- data()[data()$GPU_Cluster_ID == selectedRack(), ]
+    rack_data <- data()[data()$Rack_ID == selectedRack(), ]
     
     if (nrow(rack_data) == 0) {
       plot.new()
@@ -568,11 +568,34 @@ observe({
       "power" = col_names[6]         # Average_GPU_Power_Usage
     )
     
-    # Get metric data
-    metric_data <- rack_data[[metric_col]]
-    metric_data <- as.numeric(metric_data[!is.na(metric_data)])
+    # Group by time period and calculate averages
+    unique_time_periods <- sort(unique(rack_data[[time_col]]))
     
-    if (length(metric_data) == 0) {
+    # Check if we have valid time periods
+    if (length(unique_time_periods) == 0) {
+      plot.new()
+      text(0.5, 0.5, "No time periods found in data", 
+           cex = 1.5, col = "red")
+      return()
+    }
+    
+    metric_data <- numeric(length(unique_time_periods))
+    
+    for (i in seq_along(unique_time_periods)) {
+      time_period <- unique_time_periods[i]
+      time_data <- rack_data[rack_data[[time_col]] == time_period, ]
+      
+      # Check if we have data for this time period
+      if (nrow(time_data) == 0) {
+        metric_data[i] <- NA
+      } else {
+        metric_data[i] <- mean(time_data[[metric_col]], na.rm = TRUE)
+      }
+    }
+    
+    time_periods <- unique_time_periods
+    
+    if (length(metric_data) == 0 || all(is.na(metric_data))) {
       plot.new()
       text(0.5, 0.5, "No valid data for selected metric", 
            cex = 1.5, col = "red")
@@ -580,8 +603,8 @@ observe({
     }
     
     # Calculate control limits
-    mean_val <- mean(metric_data)
-    std_val <- sd(metric_data)
+    mean_val <- mean(metric_data, na.rm = TRUE)
+    std_val <- sd(metric_data, na.rm = TRUE)
     upper_control <- mean_val + 3 * std_val
     lower_control <- mean_val - 3 * std_val
     
@@ -597,18 +620,24 @@ observe({
       spec_lower <- NA
     }
     
-    # Create the plot
-    time_points <- 1:length(metric_data)
-    plot(time_points, metric_data,
-         type = "b",
-         pch = 19,
-         col = "#20B2AA",
-         lwd = 2,
-         xlab = "Time Points",
-         ylab = paste("Average", tools::toTitleCase(input$rackMetric)),
-         main = paste("Rack", selectedRack(), "-", tools::toTitleCase(input$rackMetric), "Control Chart"),
-         cex.lab = 1.2,
-         cex.main = 1.3)
+    # Create the plot with error handling
+    tryCatch({
+      plot(time_periods, metric_data,
+           type = "b",
+           pch = 19,
+           col = "#20B2AA",
+           lwd = 2,
+           xlab = "Time Period",
+           ylab = paste("Average", tools::toTitleCase(input$rackMetric)),
+           main = paste("Rack", selectedRack(), "-", tools::toTitleCase(input$rackMetric), "Control Chart"),
+           cex.lab = 1.2,
+           cex.main = 1.3)
+    }, error = function(e) {
+      plot.new()
+      text(0.5, 0.5, paste("Error creating plot:", e$message), 
+           cex = 1.2, col = "red")
+      return()
+    })
     
     # Add control limits
     abline(h = mean_val, col = "#2E8B57", lwd = 2, lty = 1)  # Centerline
@@ -776,7 +805,7 @@ observe({
     # Get column names
     col_names <- names(df)
     gpu_id_col <- col_names[1]      # GPU_Unique_ID
-    cluster_col <- col_names[2]     # GPU_Cluster_ID  
+    cluster_col <- col_names[2]     # Rack_ID  
     time_col <- col_names[3]       # Time_Period
     temp_col <- col_names[4]       # Average_GPU_Temperature
     power_col <- col_names[6]      # Average_GPU_Power_Usage
@@ -925,7 +954,7 @@ observe({
     
     # Define column indices based on the dataset structure
     gpu_id_col <- col_names[1]      # GPU_Unique_ID
-    cluster_col <- col_names[2]     # GPU_Cluster_ID  
+    cluster_col <- col_names[2]     # Rack_ID  
     time_col <- col_names[3]       # Time_Period
     temp_col <- col_names[4]       # Average_GPU_Temperature
     power_col <- col_names[6]      # Average_GPU_Power_Usage
@@ -934,7 +963,7 @@ observe({
     # Initialize failure tracking
     failures <- data.frame(
       GPU_ID = character(),
-      Cluster_ID = character(),
+      Rack_ID = character(),
       Time_Period = character(),
       Failure_Type = character(),
       Value = numeric(),
@@ -953,7 +982,7 @@ observe({
         if (temp_val > input$tempMax) {
           failures <- rbind(failures, data.frame(
             GPU_ID = as.character(row[[gpu_id_col]]),
-            Cluster_ID = as.character(row[[cluster_col]]),
+            Rack_ID = as.character(row[[cluster_col]]),
             Time_Period = as.character(row[[time_col]]),
             Failure_Type = "Temperature Too High",
             Value = temp_val,
@@ -965,7 +994,7 @@ observe({
         if (temp_val < input$tempMin) {
           failures <- rbind(failures, data.frame(
             GPU_ID = as.character(row[[gpu_id_col]]),
-            Cluster_ID = as.character(row[[cluster_col]]),
+            Rack_ID = as.character(row[[cluster_col]]),
             Time_Period = as.character(row[[time_col]]),
             Failure_Type = "Temperature Too Low",
             Value = temp_val,
@@ -982,7 +1011,7 @@ observe({
         if (power_val > input$powerMax) {
           failures <- rbind(failures, data.frame(
             GPU_ID = as.character(row[[gpu_id_col]]),
-            Cluster_ID = as.character(row[[cluster_col]]),
+            Rack_ID = as.character(row[[cluster_col]]),
             Time_Period = as.character(row[[time_col]]),
             Failure_Type = "Power Usage Too High",
             Value = power_val,
@@ -994,7 +1023,7 @@ observe({
         if (power_val < input$powerMin) {
           failures <- rbind(failures, data.frame(
             GPU_ID = as.character(row[[gpu_id_col]]),
-            Cluster_ID = as.character(row[[cluster_col]]),
+            Rack_ID = as.character(row[[cluster_col]]),
             Time_Period = as.character(row[[time_col]]),
             Failure_Type = "Power Usage Too Low",
             Value = power_val,
@@ -1011,7 +1040,7 @@ observe({
         if (memory_val > input$memoryMax) {
           failures <- rbind(failures, data.frame(
             GPU_ID = as.character(row[[gpu_id_col]]),
-            Cluster_ID = as.character(row[[cluster_col]]),
+            Rack_ID = as.character(row[[cluster_col]]),
             Time_Period = as.character(row[[time_col]]),
             Failure_Type = "Memory Usage Too High",
             Value = memory_val,
@@ -1023,7 +1052,7 @@ observe({
         if (memory_val < input$memoryMin) {
           failures <- rbind(failures, data.frame(
             GPU_ID = as.character(row[[gpu_id_col]]),
-            Cluster_ID = as.character(row[[cluster_col]]),
+            Rack_ID = as.character(row[[cluster_col]]),
             Time_Period = as.character(row[[time_col]]),
             Failure_Type = "Memory Usage Too Low",
             Value = memory_val,
@@ -1061,7 +1090,7 @@ observe({
           style = "margin-bottom: 15px;",
           h5(paste("🚨 GPU Failure Detected")),
           p(strong("GPU ID:"), failure$GPU_ID),
-          p(strong("Rack:"), failure$Cluster_ID),
+          p(strong("Rack:"), failure$Rack_ID),
           p(strong("Time Period:"), failure$Time_Period),
           p(strong("Failure Type:"), failure$Failure_Type),
           p(strong("Value:"), round(failure$Value, 2)),
