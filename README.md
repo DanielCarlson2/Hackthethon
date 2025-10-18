@@ -27,7 +27,8 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 ### How to use:  
 
-GIF OF USER USING 
+Prerequistie: Follow the _____ instructions first if you do not have a csv file ready
+Step 1: Open the Shiny App Tool
 
 ### Codebook for CSV Data Inputs:
 
