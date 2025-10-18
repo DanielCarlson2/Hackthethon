@@ -4,8 +4,6 @@ library(shiny)
 library(bslib)
 library(dplyr)
 
-source("/cloud/project/User tool/User_tool_math.R")
-
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
     tags$style(HTML("
@@ -137,13 +135,6 @@ ui <- fluidPage(
                        "Hour 21" = "21", "Hour 22" = "22", "Hour 23" = "23", "Hour 24" = "24"),
             selected = "all"
           ),
-          # Input: Column selector for histogram ----
-          selectInput(
-            inputId = "histColumn",
-            label = "Select Column for Histogram:",
-            choices = NULL,
-            selected = NULL
-          ),
           # Input: Number of data points to show ----
           selectInput(
             inputId = "dataPoints",
@@ -155,47 +146,42 @@ ui <- fluidPage(
           selectInput(
             inputId = "sortOption",
             label = "Sort Data By:",
-            choices = c("All Hours" = "all_hours", "Time Period" = "time_period", "All Bins" = "all_bins", "Bin Number" = "bin_number"),
-            selected = "all_hours"
+            choices = c("Time Period" = "time_period", "GPU Rack" = "gpu_rack", "GPU ID" = "gpu_id"),
+            selected = "time_period"
+          )
+        ),
+        # Statistics Cards - Three side by side (moved to top)
+        fluidRow(
+          column(4,
+            card(
+              card_header("🌡️ Temperature Statistics", class = "bg-primary text-white"),
+              p("Average GPU Temperature analysis (°C)"),
+              verbatimTextOutput("tempStats"),
+              class = "h-100"
+            )
+          ),
+          column(4,
+            card(
+              card_header("⚡ Power Usage Statistics", class = "bg-success text-white"),
+              p("Average GPU Power Usage analysis (W)"),
+              verbatimTextOutput("powerStats"),
+              class = "h-100"
+            )
+          ),
+          column(4,
+            card(
+              card_header("💾 Memory Usage Statistics", class = "bg-info text-white"),
+              p("Average GPU Memory Usage analysis (%)"),
+              verbatimTextOutput("memoryStats"),
+              class = "h-100"
+            )
           )
         ),
         card(
-        card_header("Data Distribution"),
-        p("Histogram showing the distribution of selected metrics with 95% confidence intervals. Data outside confidence intervals are highlighted in different colors."),
-        plotOutput(outputId= "generalHistogram")
-      ),
-      card(
-        card_header("Data Preview"),
-        p("Shows data with customizable sorting and number of rows. Use the dropdowns above to control display options."),
-        tableOutput("dataPreview")
-      ),
-      # Statistics Cards - Three side by side
-      fluidRow(
-        column(4,
-          card(
-            card_header("🌡️ Temperature Statistics", class = "bg-primary text-white"),
-            p("Average GPU Temperature analysis (°C)"),
-            verbatimTextOutput("tempStats"),
-            class = "h-100"
-          )
-        ),
-        column(4,
-          card(
-            card_header("⚡ Power Usage Statistics", class = "bg-success text-white"),
-            p("Average GPU Power Usage analysis (W)"),
-            verbatimTextOutput("powerStats"),
-            class = "h-100"
-          )
-        ),
-        column(4,
-          card(
-            card_header("💾 Memory Usage Statistics", class = "bg-info text-white"),
-            p("Average GPU Memory Usage analysis (%)"),
-            verbatimTextOutput("memoryStats"),
-            class = "h-100"
-          )
+          card_header("Data Preview"),
+          p("Shows data with customizable sorting and number of rows. Use the dropdowns above to control display options."),
+          tableOutput("dataPreview")
         )
-      )
     ),
     ),
     
@@ -419,17 +405,15 @@ server <- function(input, output) {
       # Sort by time period (column 3)
       time_col <- names(df)[3]
       df <- df[order(df[[time_col]]), ]
-    } else if (input$sortOption == "bin_number") {
-      # Sort by GPU cluster ID (column 2) as bin number
-      cluster_col <- names(df)[2]
-      df <- df[order(df[[cluster_col]]), ]
-    } else if (input$sortOption == "all_bins") {
-      # Sort by cluster ID then time period
-      cluster_col <- names(df)[2]
-      time_col <- names(df)[3]
-      df <- df[order(df[[cluster_col]], df[[time_col]]), ]
+    } else if (input$sortOption == "gpu_rack") {
+      # Sort by GPU rack (column 2)
+      rack_col <- names(df)[2]
+      df <- df[order(df[[rack_col]]), ]
+    } else if (input$sortOption == "gpu_id") {
+      # Sort by GPU ID (column 1)
+      gpu_id_col <- names(df)[1]
+      df <- df[order(df[[gpu_id_col]]), ]
     }
-    # For "all_hours", no additional sorting needed
     
     # Filter data by selected hour if not "all"
     if (input$selectedHour != "all") {
