@@ -21,8 +21,8 @@ set.seed(123)  # Reproducibility
 
 # CHANGE TO SPECIFY WHAT YOU WANT
 size <- 5         # GPUs per rack
-racks <- 10       # Number of racks
-time_periods <- 24  # Number of time periods, 24 so there is 1 data pull per hour
+racks <- 5       # Number of racks
+time_periods <- 12  # Number of time periods, 24 so there is 1 data pull per hour
 
 # Total datapoints
 n <- size * racks * time_periods
@@ -84,7 +84,7 @@ to_export <- one %>%
   select(-Is_Failing, everything(), Is_Failing)  # Move Is_Failing to end
 
 # Save to CSV
-write.csv(to_export, "./Datacenter datasets/dataset_4.csv", row.names = FALSE)
+write.csv(to_export, "./datacenterDatasets/dataset_4.csv", row.names = FALSE)
 
 # Print diagnostics
 cat("Failing Rack IDs:", failing_rack_ids, "\n")

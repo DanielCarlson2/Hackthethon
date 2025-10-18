@@ -77,7 +77,7 @@ to_export <- one %>%
 
 
 # Save to CSV
-write.csv(to_export, "./Datacenter datasets/dataset_3.csv", row.names = FALSE)
+write.csv(to_export, "./datacenterDatasets/dataset_3.csv", row.names = FALSE)
 
 # Print failing racks
 cat("Failing Rack IDs:", failing_rack_ids, "\n")
