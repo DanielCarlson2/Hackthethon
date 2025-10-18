@@ -1,5 +1,5 @@
 # Simulated GPU dataset with purposely "dead" GPUs to test app performance
-# group members: Nevin Motto, Evelyn Morisseu, Daniel Carlson, Rene Umeh, Charlie Gagliardo
+# group members: Nevin Motto, Evelyne Morisseau, Daniel Carlson, Rene Umeh, Charlie Gagliardo
 
 # this script simulates GPU performance data across three metrics: 
 # Each datapoint is a row for a given GPU averaged over a given time period
