@@ -2,10 +2,26 @@
 
 library(shiny)
 library(bslib)
+library(dplyr)
 
 
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
+    tags$style(HTML("
+    .boxButton {
+      background-color: #3B82F6;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 18px;
+      width: fit-content;
+    }
+    .boxButton:hover {
+      background-color: #2563EB;
+    }
+  ")),
   # Custom theme with orange and purple colors ----
   theme = bs_theme(
     version = 5,
@@ -21,6 +37,8 @@ ui <- fluidPage(
     fg = "#1E293B",            # Main text color
     "font-family-base" = "'Inter', 'Segoe UI', sans-serif"
   ),
+
+  
   
   # App title ----
   titlePanel("Data Center GPU Health Dashboard"),
@@ -124,9 +142,9 @@ ui <- fluidPage(
           )
         ),
         card(
-          card_header("Tab 2 Content"),
-          p("This tab shows distribution analysis of your data."),
-          plotOutput(outputId = "tab2Plot")
+          card_header("Distribution Analysis"),
+          uiOutput("rackButtons"),
+          plotOutput(outputId = "rackPlot")
         )
       )
     ),
@@ -156,7 +174,7 @@ ui <- fluidPage(
           card_header("Tab 3 Content"),
           p("This tab displays comprehensive summary statistics about your dataset."),
           verbatimTextOutput("summaryStats")
-        )
+        ),
       )
     )
   )
@@ -164,6 +182,12 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
+    # Create reactive value to store selected rack
+    selectedRack <- reactiveVal(NULL)
+    
+    observeEvent(input$box1, {
+    showNotification("Box was clicked!")
+  })
   
   # Single reactive data source for all tabs
   data <- reactive({
@@ -194,8 +218,71 @@ server <- function(input, output) {
   })
   
 
+  # Rack buttons
+output$rackButtons <- renderUI({
+  req(data())
+  racks <- unique(data()$GPU_Cluster_ID)
+  
+  # Define number of columns for the grid
+  n_cols <- 4  # adjust as desired
+  n_racks <- length(racks)
+  n_rows <- ceiling(n_racks / n_cols)
+  
+  button_list <- lapply(racks, function(rack) {
+    actionButton(
+      inputId = paste0("rack_", rack),
+      label = paste("Rack:", rack),
+      class = "boxButton"
+    )
+  })
+  
+  # Arrange buttons into rows of columns
+  grid <- tagList(
+    lapply(1:n_rows, function(row) {
+      fluidRow(
+        lapply(1:n_cols, function(col) {
+          btn_idx <- (row - 1) * n_cols + col
+          if (btn_idx <= n_racks) {
+            column(width = floor(12 / n_cols), button_list[[btn_idx]])
+          } else {
+            column(width = floor(12 / n_cols), "")
+          }
+        })
+      )
+    })
+  )
+  grid
+})
 
+# Handle dynamic button clicks
+observe({
+  req(data())
+  racks <- unique(data()$GPU_Cluster_ID)
+  
+  lapply(racks, function(rack) {
+    observeEvent(input[[paste0("rack_", rack)]], {
+      # Store which rack is selected in a reactive value
+      selectedRack(rack)
+    })
+  })
+})
 
+  # Create reactive plot for selected rack
+  output$rackPlot <- renderPlot({
+    req(data(), selectedRack())
+    
+    # Filter data for selected rack
+    rack_data <- data() %>% filter(GPU_Cluster_ID == selectedRack())
+    
+    # Create histogram with custom settings
+    hist(rack_data[[input$histColumn]], 
+         breaks = input$bins,
+         col = input$histColor, 
+         border = "white",
+         xlab = input$histColumn,
+         main = paste("Histogram of", input$histColumn, "for Rack:", selectedRack()),
+         ylab = "Frequency")
+  })
   
   # Tab 2: Additional plot (histogram with custom settings)
   output$tab2Plot <- renderPlot({
