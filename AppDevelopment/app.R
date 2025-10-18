@@ -267,14 +267,14 @@ ui <- fluidPage(
           # Temperature thresholds
           numericInput(
             inputId = "tempMax",
-            label = "Temperature Max (°C):",
+            label = "Max Temperature (°C):",
             value = 85,
             min = 0,
             max = 200
           ),
           numericInput(
             inputId = "tempMin",
-            label = "Temperature Min (°C):",
+            label = "Min Temperature (°C):",
             value = 30,
             min = 0,
             max = 200
@@ -282,14 +282,14 @@ ui <- fluidPage(
           # Power usage thresholds
           numericInput(
             inputId = "powerMax",
-            label = "Power Usage Max (W):",
+            label = "Max Power Usage (W):",
             value = 250,
             min = 0,
             max = 1000
           ),
           numericInput(
             inputId = "powerMin",
-            label = "Power Usage Min (W):",
+            label = "Min Power Usage (W):",
             value = 50,
             min = 0,
             max = 1000

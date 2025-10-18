@@ -25,6 +25,7 @@
 # Example dataset parameters:
 set.seed(123)  # use for reproducibility of the random data
 
+# CHANGE TO SPECIFY WHAT YOU WANT
 size <-  5        # GPUs per rack
 racks <- 10      # number of racks
 time_periods <- 24  # number of time periods
@@ -70,4 +71,5 @@ to_export <- one %>%
   arrange(Time_Period, Rack_ID, GPU_Unique_ID)
 
 # Save to CSV
+# CHANGE THE FINAL CSV NAME TO AVOID OVERWRITTING FILES AND MATCH YOUR FILE DIRECTORY TO STORE THE CSV FILE
 write.csv(to_export, "/cloud/project/Datacenter_datasets/_2.csv", row.names = FALSE)

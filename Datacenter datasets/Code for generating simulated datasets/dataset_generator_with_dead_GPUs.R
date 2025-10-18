@@ -19,6 +19,7 @@ library(dplyr)
 
 set.seed(123)  # Reproducibility
 
+# CHANGE TO SPECIFY WHAT YOU WANT
 size <- 5         # GPUs per rack
 racks <- 10       # Number of racks
 time_periods <- 24  # Number of time periods, 24 so there is 1 data pull per hour
@@ -27,6 +28,7 @@ time_periods <- 24  # Number of time periods, 24 so there is 1 data pull per hou
 n <- size * racks * time_periods
 
 # Randomly select 30% of racks to be "failing"
+# CHANGE THE PERCENTAGE TO SPECIFY WHAT YOU WANT (IN ROUND)
 failing_rack_ids <- sample(1:racks, size = round(0.3 * racks), replace = FALSE)
 
 # Create base structure
@@ -66,6 +68,7 @@ one <- one %>%
 
 # Hardcoding a few "dead" GPUs: both power and memory usage = 0
 # Choose a few unique GPU IDs (ex 3 GPUs) to simulate dead GPUs
+# YOU SPECIFY THE NUMBER OF GPUS YOU'D LIKE TO BE DEAD (CHANGE SIZE)
 dead_gpu_ids <- sample(unique(one$GPU_Unique_ID), size = 3)
 
 # ifelse statements to set GPU Power or Memory as 0 if GPU is dead
@@ -81,6 +84,7 @@ to_export <- one %>%
   select(-Is_Failing, everything(), Is_Failing)  # Move Is_Failing to end
 
 # Save to CSV
+# CHANGE THE FINAL CSV NAME TO AVOID OVERWRITTING FILES AND MATCH YOUR FILE DIRECTORY TO STORE THE CSV FILE
 write.csv(to_export, "/cloud/project/Datacenter_datasets/_4.csv", row.names = FALSE)
 
 # Print diagnostics
