@@ -28,7 +28,7 @@ time_periods <- 24  # Number of time periods, 24 so there is 1 data pull per hou
 n <- size * racks * time_periods
 
 # Randomly select 30% of racks to be "failing"
-# CHANGE THE PERCENTAGE TO SPECIFY WHAT YOU WANT
+# CHANGE THE PERCENTAGE TO SPECIFY WHAT YOU WANT (IN ROUND)
 failing_rack_ids <- sample(1:racks, size = round(0.3 * racks), replace = FALSE)
 
 # Create base structure
