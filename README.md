@@ -17,9 +17,9 @@ Our scope includes GPUs organized into racks in the specified datacenter from ou
 
 ### How to Install the Tool:
 
-- Have R and R Studio downloaded
-- Clone the github repository or download the ZIP file from github and open it in RStudio
-- Place your .csv files in the Dashboard
+- Have R and R Studio downloaded.
+- Clone the github repository or download the ZIP file from github and open it in RStudio.
+- Place your .csv files in the Dashboard.
 - Input the following GPU specification limit information:
   - Max Temperature
   - Max Memory Utilization
@@ -49,24 +49,36 @@ GIF OF USER USING
 <summary>Expand</summary>
   
 #### General Overview/Purpose
-There are three CSV Dataset Generators depending on the type of GPU failure scenario you wish to simulate. 
+There are three CSV Dataset Generators, each designed to simulate different GPU failure scenarios in a datacenter environment:
 
-We have dataset_generator_no_GPU_failure.R where all GPUs and GPU racks are running at optimal, safe metrics. 
+dataset_generator_no_GPU_failure.R
+- All GPUs and racks are running at optimal, safe metrics.
+- Represents a fully healthy datacenter with no hardware issues.
 
-The second generator is dataset_generator_with_errors.R where a majority of GPUs are running at optimal, safe metrics however a specified percentage of GPUs (we use 30%) are specified to be running at metrics close to failure, but not completely shut down. This simulates a datacenter that has a majority of GPUs and racks that are operating healthily, and some that are at dangerous levels and need immediate maintenance/intervention. 
+dataset_generator_with_errors.R
+- Most GPUs operate at normal levels.
+- A specified percentage of GPUs (default 30%) run near failure thresholds — overheating, high power draw, or high memory utilization.
+- Simulates a datacenter with some GPUs under high stress requiring immediate maintenance or monitoring.
 
-The third generator is dataset_generator_with_dead_GPUs.R where a majority of GPUs are running at optimal, safe metrics however a specified number of GPUs (we use 3) are specified to be completely dead/shut down, and a specified percentage of GPUs (we use 30%) are specified to be running at metrics close to failure, but not completely shut down. A dead GPU means that the GPU is no longer able to draw power and has no memory use. This simulates a datacenter that has a majority of GPUs and racks that are operating healthily, some that are broken and need immediate maintenance/intervention to be replaced, and some that are operating at dangerous levels and also need immediate maintenance/intervention. 
+dataset_generator_with_dead_GPUs.R
+- Most GPUs are healthy.
+- A specified number of GPUs (default 3) are completely dead or shut down (no power draw or memory usage).
+- Another specified percentage (default 30%) of GPUs are close to failure but still operational.
+-Simulates a datacenter containing:
+  -Healthy GPUs running safely,
+  -Dead GPUs that need replacement, and
+  -High-stress GPUs requiring maintenance intervention.
 
 #### How to Install: 
 - Download the .csv generator files from the github repository.
 - Run in R or RStudio.
 
 #### How to use .csv Generator:
-- Open the .csv generator code that you just installed 
+- Open the .csv generator code that you just installed .
 - With in the generator code modify the sections labelled with comments. The following can be changed:
   - The number of racks, GPUs, and time period
-  - (If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead
-  - The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer
+  - (If using a generator that adds GPUs close to failure or dead) The percentage of GPUs that will be close to fail and the number of GPUs that will be dead.
+  - The filename of the outputted csv file (recommended to change per run so as to not overwrite any csv files accidentally) & the file directory for where you wish to store the csv files in your computer.
   - Once you are happy with the specifications that you have chosen, run the code! 
 
 #### Our Dataset Notes
